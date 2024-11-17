@@ -197,7 +197,10 @@ static Result<MeshData> build_mesh_data(const tinygltf::Model& gltf, const tinyg
         }
     }
 
-    return {true, MeshData{std::move(vertices), std::move(indices)}};
+ // TODO may not be right, should find a way to do it properly
+    glm::vec3 center;
+
+    return {true, MeshData{std::move(vertices), std::move(indices), std::move(center)}};
 }
 
 static Result<TextureData> build_texture_data(const tinygltf::Image& image, bool as_sRGB) {

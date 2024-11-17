@@ -9,16 +9,17 @@ namespace OM3D {
     StaticMesh::StaticMesh(const MeshData& data) :
         _vertex_buffer(data.vertices),
         _index_buffer(data.indices) {
-        glm::vec3 center = glm::vec3(0.0f, 0.0f, 0.0f);
-        for (const auto & vertice : data.vertices) {
-            center += vertice.position;
-        }
-        center /= static_cast<float>(data.vertices.size());
-        glm::vec3 max_position = data.vertices[0].position;
-        for (const auto & vertice : data.vertices) {
+        _center = glm::vec3(0.0f, 0.0f, 0.0f);
+        for (const auto & vertice : data.vertices)
+        {
+            _center += vertice.position;
+        } 
+        // center /= static_cast<float>(data.vertices.size());
+        // glm::vec3 max_position = data.vertices[0].position;
+        // for (const auto & vertice : data.vertices) {
 //            if ()
 //            center += vertice.position;
-        }
+        //}
         // ICI
     }
 
@@ -50,4 +51,8 @@ namespace OM3D {
         glDrawElements(GL_TRIANGLES, int(_index_buffer.element_count()), GL_UNSIGNED_INT, nullptr);
     }
 
+    glm::vec3 StaticMesh::center() const
+    {
+        return _center;
+    }
 }

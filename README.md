@@ -11,7 +11,7 @@ Requirements: cmake 3.20 minimum, C++17, and OpenGL 4.5.
 mkdir -p build/debug
 cd build/debug
 cmake ../..
-make
+make -j
 ```
 
 ### Contact

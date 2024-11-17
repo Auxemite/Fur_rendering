@@ -35,7 +35,7 @@ void Material::bind() const {
             glDisable(GL_BLEND);
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
-            glFrontFace(GL_CCW);
+            glFrontFace(GL_CW);
         break;
 
         case BlendMode::Alpha:

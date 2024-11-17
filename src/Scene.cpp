@@ -68,7 +68,8 @@ void Scene::render() const {
 
     // Render every object
     for(const SceneObject& obj : _objects) {
-        obj.render();
+        if(obj.is_visible(_camera))
+            obj.render();
     }
 }
 
