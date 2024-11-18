@@ -38,13 +38,49 @@ void SceneObject::set_transform(const glm::mat4& tr) {
     _transform = tr;
 }
 
+/*
+struct Frustum {
+    public:
+    glm::vec3 _near_normal;
+    // No far plane (zFar is +inf)
+    glm::vec3 _top_normal;
+    glm::vec3 _bottom_normal;
+    glm::vec3 _right_normal;
+    glm::vec3 _left_normal;
+};
+*/
+
+bool in_plane(const glm::vec3& plane_normal, const glm::vec3& origin, const glm::vec3 center, const float radius)
+{
+    glm::vec3 direction = glm::normalize(center - origin);
+    float signed_distance = glm::dot(plane_normal, direction);
+
+    return -radius <= signed_distance;
+}
+
 bool SceneObject::is_visible(const Camera& camera) const
 {
-    // glm::vec4 trans_center = glm::vec3(_center, 1.0f) * _transform;
-    glm::vec3 direction = glm::normalize(_center - camera.position());
+    const glm::vec3 origin = camera.position();
+    const Frustum frut = camera.build_frustum();
 
-    return glm::dot(camera.forward(), direction) > 0.5; // TODO fix with the frutsum to get the right HitBox
-}
+    //Get scale from transform diagonal
+    const glm::vec3 scale = glm::vec3(_transform[0][0], _transform[1][1], _transform[2][2]);
+
+    //Get our center with transform offsets
+    const glm::vec3 center = _center + glm::vec3(_transform[0][3], _transform[1][3], _transform[2][3]);;
+
+    // Get the max scale to update the radius of our bounding box
+    const float max_scale = std::max(std::max(scale.x, scale.y), scale.z);
+
+    // Update radius, assuming that the scales correspond to diameter (imply *0.5f)
+    const float radius = _radius * (max_scale * 0.5f);
+
+    return (in_plane(frut._left_normal, origin, center, radius) &&
+            in_plane(frut._right_normal, origin, center, radius) &&
+            in_plane(frut._near_normal, origin, center, radius) &&
+            in_plane(frut._top_normal, origin, center, radius) &&
+            in_plane(frut._bottom_normal, origin, center, radius));
+};
 
 const glm::mat4& SceneObject::transform() const {
     return _transform;

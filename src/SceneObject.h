@@ -22,6 +22,7 @@ class SceneObject {
         const glm::mat4& transform() const;
         bool is_visible(const Camera& camera) const;
 
+
     private:
         glm::mat4 _transform = glm::mat4(1.0f);
 

@@ -8,6 +8,7 @@
 namespace OM3D {
 
 struct Frustum {
+    public:
     glm::vec3 _near_normal;
     // No far plane (zFar is +inf)
     glm::vec3 _top_normal;
