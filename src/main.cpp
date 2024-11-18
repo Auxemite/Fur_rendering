@@ -398,6 +398,9 @@ int main(int argc, char** argv) {
             {
                 PROFILE_GPU("Tonemap");
 
+                // Tone Mapping Triangle is Facing away from camera
+                glFrontFace(GL_CW);
+
                 renderer.tone_map_framebuffer.bind(false, true);
                 tonemap_program->bind();
                 tonemap_program->set_uniform(HASH("exposure"), exposure);

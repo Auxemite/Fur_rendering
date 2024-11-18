@@ -1,6 +1,7 @@
 #include "StaticMesh.h"
 
 #include <glad/gl.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace OM3D {
 
@@ -8,20 +9,7 @@ namespace OM3D {
 
     StaticMesh::StaticMesh(const MeshData& data) :
         _vertex_buffer(data.vertices),
-        _index_buffer(data.indices) {
-        _center = glm::vec3(0.0f, 0.0f, 0.0f);
-        for (const auto & vertice : data.vertices)
-        {
-            _center += vertice.position;
-        } 
-        // center /= static_cast<float>(data.vertices.size());
-        // glm::vec3 max_position = data.vertices[0].position;
-        // for (const auto & vertice : data.vertices) {
-//            if ()
-//            center += vertice.position;
-        //}
-        // ICI
-    }
+        _index_buffer(data.indices) {}
 
     void StaticMesh::draw() const {
         _vertex_buffer.bind(BufferUsage::Attribute);
@@ -51,8 +39,13 @@ namespace OM3D {
         glDrawElements(GL_TRIANGLES, int(_index_buffer.element_count()), GL_UNSIGNED_INT, nullptr);
     }
 
-    glm::vec3 StaticMesh::center() const
+    size_t StaticMesh::vertices_count()
     {
-        return _center;
+        return this->_vertex_buffer.element_count();
+    }
+
+    Vertex* StaticMesh::vertices()
+    {
+        return this->_vertex_buffer.map(AccessType::ReadOnly).data();
     }
 }

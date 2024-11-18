@@ -27,6 +27,8 @@ class SceneObject {
 
         std::shared_ptr<StaticMesh> _mesh;
         std::shared_ptr<Material> _material;
+        glm::vec3 _center;
+        float _radius;
 };
 
 }

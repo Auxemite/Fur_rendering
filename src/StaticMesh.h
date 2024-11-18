@@ -12,7 +12,8 @@ namespace OM3D {
 struct MeshData {
     std::vector<Vertex> vertices;
     std::vector<u32> indices;
-    glm::vec3 center;
+    // glm::vec3 center;
+    // float radius;
 };
 
 class StaticMesh : NonCopyable {
@@ -25,12 +26,14 @@ class StaticMesh : NonCopyable {
         StaticMesh(const MeshData& data);
 
         void draw() const;
-        glm::vec3 center() const;
+        size_t vertices_count();
+        Vertex* vertices();
 
     private:
         TypedBuffer<Vertex> _vertex_buffer;
         TypedBuffer<u32> _index_buffer;
-        glm::vec3 _center;
+        // glm::vec3 _center;
+        // float _radius;
 };
 
 }
