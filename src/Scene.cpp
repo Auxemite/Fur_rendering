@@ -38,7 +38,7 @@ void Scene::set_sun(glm::vec3 direction, glm::vec3 color) {
     _sun_color = color;
 }
 
-void Scene::render() const {
+void Scene::render(int i) const {
     // Fill and bind frame data buffer
     TypedBuffer<shader::FrameData> buffer(nullptr, 1);
     {
@@ -66,11 +66,18 @@ void Scene::render() const {
     }
     light_buffer.bind(BufferUsage::Storage, 1);
 
+    int count = 0;
     // Render every object
-    for(const SceneObject& obj : _objects) {
+    for(const SceneObject& obj : _objects)
+    {
         if(obj.is_visible(_camera))
+        {
+            count++;
             obj.render();
+        }
     }
+    if (i == 60)
+        printf("Rendered %d objects\n", count);
 }
 
 }

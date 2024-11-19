@@ -274,7 +274,7 @@ std::unique_ptr<Scene> create_default_scene() {
     auto scene = std::make_unique<Scene>();
 
     // Load default cube model
-    auto result = Scene::from_gltf(std::string(data_path) + "cube.glb");
+    auto result = Scene::from_gltf(std::string(data_path) + "forest.glb");
     ALWAYS_ASSERT(result.is_ok, "Unable to load default scene");
     scene = std::move(result.value);
 
@@ -358,6 +358,7 @@ int main(int argc, char** argv) {
     auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
     RendererState renderer;
 
+    int i = 0;
     for(;;) {
         glfwPollEvents();
         if(glfwWindowShouldClose(window) || glfwGetKey(window, GLFW_KEY_ESCAPE)) {
@@ -391,7 +392,8 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("Main pass");
 
                 renderer.main_framebuffer.bind(true, true);
-                scene->render();
+                scene->render(++i);
+                i %= 60;
             }
 
             // Apply a tonemap in compute shader

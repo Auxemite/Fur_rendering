@@ -1,6 +1,7 @@
 #include "SceneObject.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/norm.hpp>
 
 namespace OM3D {
 
@@ -50,12 +51,15 @@ struct Frustum {
 };
 */
 
-bool in_plane(const glm::vec3& plane_normal, const glm::vec3& origin, const glm::vec3 center, const float radius)
+bool in_plane(glm::vec3 plane_normal, const glm::vec3& origin, const glm::vec3 center, const float radius)
 {
-    glm::vec3 direction = glm::normalize(center - origin);
-    float signed_distance = glm::dot(plane_normal, direction);
+    plane_normal = glm::normalize(plane_normal);
 
-    return -radius <= signed_distance;
+    glm::vec3 direction = center - origin;
+
+    float d = glm::dot(plane_normal, direction);
+
+    return d >= -radius;
 }
 
 bool SceneObject::is_visible(const Camera& camera) const
@@ -64,20 +68,20 @@ bool SceneObject::is_visible(const Camera& camera) const
     const Frustum frut = camera.build_frustum();
 
     //Get scale from transform diagonal
-    const glm::vec3 scale = glm::vec3(_transform[0][0], _transform[1][1], _transform[2][2]);
+    // const glm::vec3 scale = glm::vec3(_transform[0][0], _transform[1][1], _transform[2][2]);
 
     //Get our center with transform offsets
-    const glm::vec3 center = _center + glm::vec3(_transform[0][3], _transform[1][3], _transform[2][3]);;
+    const glm::vec3 center = _center + glm::vec3(_transform[3][0], _transform[3][1], _transform[3][2]);
 
     // Get the max scale to update the radius of our bounding box
-    const float max_scale = std::max(std::max(scale.x, scale.y), scale.z);
+    // const float max_scale = std::max(std::max(scale.x, scale.y), scale.z);
 
     // Update radius, assuming that the scales correspond to diameter (imply *0.5f)
-    const float radius = _radius * (max_scale * 0.5f);
+    const float radius = _radius;// * (max_scale * .5f);
 
-    return (in_plane(frut._left_normal, origin, center, radius) &&
+    return (in_plane(frut._near_normal, origin, center, radius) &&
+            in_plane(frut._left_normal, origin, center, radius) &&
             in_plane(frut._right_normal, origin, center, radius) &&
-            in_plane(frut._near_normal, origin, center, radius) &&
             in_plane(frut._top_normal, origin, center, radius) &&
             in_plane(frut._bottom_normal, origin, center, radius));
 };
