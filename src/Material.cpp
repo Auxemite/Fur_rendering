@@ -86,8 +86,7 @@ std::shared_ptr<Material> Material::empty_material() {
     std::cout << "Creating empty material" << std::endl;
     if(!material) {
         material = std::make_shared<Material>();
-        material->_program = Program::from_files("g_buffer.frag", "basic.vert");
-//        material->_program = Program::from_files("lit.frag", "basic.vert");
+        material->_program = Program::from_files("lit.frag", "basic.vert");
         weak_material = material;
     }
     return material;
@@ -97,13 +96,6 @@ Material Material::textured_material() {
     Material material;
     std::cout << "Creating texture material" << std::endl;
     material._program = Program::from_files("lit.frag", "basic.vert", {"TEXTURED"});
-    return material;
-}
-
-Material Material::debug_textured_normal_mapped_material() {
-    Material material;
-    std::cout << "Creating normal mapped material" << std::endl;
-    material._program = Program::from_files("g_buffer.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
     return material;
 }
 

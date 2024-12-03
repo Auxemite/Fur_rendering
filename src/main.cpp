@@ -453,29 +453,27 @@ int main(int argc, char** argv) {
                 // Tone Mapping Triangle is Facing away from camera
                 glFrontFace(GL_CW);
 
-                debug_program->set_uniform(HASH("render_mode"), static_cast<uint>(render_mode));
-                
-                switch (render_mode)
-                {
-                case RenderMode::Normals:
-                    renderer.normal_texture.bind(0);
-                    break;
-
-                case RenderMode::Albedo:
-                    renderer.albedo_texture.bind(0);
-                    break;
-
-                case RenderMode::Depth:
-                    renderer.depth_texture.bind(0);
-                    break;
-
-                default:
-                    renderer.lit_hdr_texture.bind(0);
-                    break;
-                }
-
                 renderer.tone_map_framebuffer.bind(false, false);
                 debug_program->bind();
+                debug_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
+                switch (render_mode)
+                {
+                    case RenderMode::Normals:
+                        renderer.normal_texture.bind(0);
+                        break;
+
+                    case RenderMode::Albedo:
+                        renderer.albedo_texture.bind(0);
+                        break;
+
+                    case RenderMode::Depth:
+                        renderer.depth_texture.bind(0);
+                        break;
+
+                    default:
+                        renderer.lit_hdr_texture.bind(0);
+                        break;
+                }
 
                 glDrawArrays(GL_TRIANGLES, 0, 3);
             }

@@ -435,12 +435,8 @@ Result<std::unique_ptr<Scene>> Scene::from_gltf(const std::string& file_name) {
                     } else if(!normal) {
                         mat = std::make_shared<Material>(Material::textured_material());
                         mat->set_texture(0u, albedo);
-//                    } else if (render_mode != RenderMode::Default) {
-//                        mat = std::make_shared<Material>(Material::debug_textured_normal_mapped_material());
-//                        mat->set_texture(0u, albedo);
-//                        mat->set_texture(1u, normal);
                     } else {
-                        mat = std::make_shared<Material>(Material::debug_textured_normal_mapped_material());
+                        mat = std::make_shared<Material>(Material::textured_normal_mapped_material());
                         mat->set_texture(0u, albedo);
                         mat->set_texture(1u, normal);
                     }
