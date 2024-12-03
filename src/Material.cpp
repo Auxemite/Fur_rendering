@@ -84,7 +84,8 @@ std::shared_ptr<Material> Material::empty_material() {
     auto material = weak_material.lock();
     if(!material) {
         material = std::make_shared<Material>();
-        material->_program = Program::from_files("lit.frag", "basic.vert");
+        material->_program = Program::from_files("g_buffer.frag", "basic.vert");
+//        material->_program = Program::from_files("lit.frag", "basic.vert");
         weak_material = material;
     }
     return material;

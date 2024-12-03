@@ -430,6 +430,13 @@ int main(int argc, char** argv) {
 
             // Render the scene
             {
+                PROFILE_GPU("G Buffer pass");
+
+                renderer.g_buffer_framebuffer.bind(false, true);
+                scene->render(static_cast<u32>(render_mode), i);
+            }
+
+            {
                 PROFILE_GPU("Main pass");
 
                 renderer.main_framebuffer.bind(false, true);
