@@ -3,6 +3,7 @@
 #include <glad/gl.h>
 
 #include <algorithm>
+#include <iostream>
 
 namespace OM3D {
 
@@ -82,6 +83,7 @@ void Material::bind() const {
 std::shared_ptr<Material> Material::empty_material() {
     static std::weak_ptr<Material> weak_material;
     auto material = weak_material.lock();
+    std::cout << "Creating empty material" << std::endl;
     if(!material) {
         material = std::make_shared<Material>();
         material->_program = Program::from_files("g_buffer.frag", "basic.vert");
@@ -93,13 +95,16 @@ std::shared_ptr<Material> Material::empty_material() {
 
 Material Material::textured_material() {
     Material material;
+    std::cout << "Creating texture material" << std::endl;
     material._program = Program::from_files("lit.frag", "basic.vert", {"TEXTURED"});
     return material;
 }
 
 Material Material::textured_normal_mapped_material() {
     Material material;
-    material._program = Program::from_files("lit.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+    std::cout << "Creating normal mapped material" << std::endl;
+//    material._program = Program::from_files("lit.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+    material._program = Program::from_files("g_buffer.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
     return material;
 }
 

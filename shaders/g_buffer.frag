@@ -38,6 +38,9 @@ void main() {
 #endif
 
     out_color = vec4(in_color, 1.0);
+#ifdef TEXTURED
+    out_color *= texture(in_texture, in_uv);
+#endif
     out_normal = vec4(normal, 1.0);
 }
 

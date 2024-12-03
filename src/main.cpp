@@ -433,14 +433,16 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("G Buffer pass");
 
                 renderer.g_buffer_framebuffer.bind(false, true);
+                renderer.albedo_texture.bind(0);
+                renderer.normal_texture.bind(1);
                 scene->render(static_cast<u32>(render_mode), i);
             }
 
             {
                 PROFILE_GPU("Main pass");
 
-                renderer.main_framebuffer.bind(false, true);
-                scene->render(static_cast<u32>(render_mode), ++i);
+//                renderer.main_framebuffer.bind(false, true);
+//                scene->render(static_cast<u32>(render_mode), ++i);
                 i %= 60;
             }
 
@@ -454,17 +456,44 @@ int main(int argc, char** argv) {
                 renderer.tone_map_framebuffer.bind(false, true);
                 tonemap_program->bind();
                 tonemap_program->set_uniform(HASH("exposure"), exposure);
-                renderer.lit_hdr_texture.bind(0);
+                if (render_mode == RenderMode::Normals) {
+                    renderer.normal_texture.bind(0);
+                } else if (render_mode == RenderMode::Albedo) {
+                    renderer.albedo_texture.bind(0);
+                } else {
+                    renderer.lit_hdr_texture.bind(0);
+                }
                 glDrawArrays(GL_TRIANGLES, 0, 3);
             }
 
-            // Blit tonemap result to screen
             {
                 PROFILE_GPU("Blit");
 
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 renderer.tone_map_framebuffer.blit();
             }
+
+            // Apply a tonemap in compute shader
+//            {
+//                PROFILE_GPU("Tonemap");
+//
+//                // Tone Mapping Triangle is Facing away from camera
+//                glFrontFace(GL_CW);
+//
+//                renderer.tone_map_framebuffer.bind(false, true);
+//                tonemap_program->bind();
+//                tonemap_program->set_uniform(HASH("exposure"), exposure);
+//                renderer.lit_hdr_texture.bind(0);
+//                glDrawArrays(GL_TRIANGLES, 0, 3);
+//            }
+
+            // Blit tonemap result to screen
+//            {
+//                PROFILE_GPU("Blit");
+//
+//                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//                renderer.tone_map_framebuffer.blit();
+//            }
 
             // Draw GUI on top
             gui(imgui);
