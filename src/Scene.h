@@ -10,7 +10,16 @@
 
 namespace OM3D {
 
-class Scene : NonMovable {
+    enum class RenderMode {
+        Default = 0,
+        Albedo = 1,
+        Normals = 2,
+        Depth = 3,
+    };
+
+    static RenderMode render_mode = RenderMode::Default;
+
+    class Scene : NonMovable {
 
     public:
         Scene();

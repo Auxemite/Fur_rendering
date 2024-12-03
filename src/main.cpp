@@ -19,18 +19,10 @@
 
 using namespace OM3D;
 
-enum class RenderMode {
-    Default = 0,
-    Albedo = 1,
-    Normals = 2,
-    Depth = 3,
-};
-
 static float delta_time = 0.0f;
 static std::unique_ptr<Scene> scene;
 static float exposure = 1.0;
 static std::vector<std::string> scene_files;
-static RenderMode render_mode = RenderMode::Default;
 
 namespace OM3D {
 extern bool audit_bindings_before_draw;
@@ -390,6 +382,7 @@ int main(int argc, char** argv) {
     scene = create_default_scene();
 
     auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
+    auto debug_program = Program::from_files("debug.frag", "screen.vert");
     RendererState renderer;
 
     int i = 0;
@@ -433,34 +426,36 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("G Buffer pass");
 
                 renderer.g_buffer_framebuffer.bind(false, true);
-                renderer.albedo_texture.bind(0);
-                renderer.normal_texture.bind(1);
                 scene->render(static_cast<u32>(render_mode), i);
             }
 
             {
                 PROFILE_GPU("Main pass");
 
-//                renderer.main_framebuffer.bind(false, true);
-//                scene->render(static_cast<u32>(render_mode), ++i);
+                renderer.main_framebuffer.bind(false, true);
+                scene->render(static_cast<u32>(render_mode), ++i);
                 i %= 60;
             }
 
             // Apply a tonemap in compute shader
             {
-                PROFILE_GPU("Tonemap");
+                PROFILE_GPU("Final Render");
 
                 // Tone Mapping Triangle is Facing away from camera
                 glFrontFace(GL_CW);
 
-                renderer.tone_map_framebuffer.bind(false, true);
-                tonemap_program->bind();
-                tonemap_program->set_uniform(HASH("exposure"), exposure);
+                renderer.tone_map_framebuffer.bind(false, false);
+                debug_program->bind();
                 if (render_mode == RenderMode::Normals) {
                     renderer.normal_texture.bind(0);
-                } else if (render_mode == RenderMode::Albedo) {
+                }
+                else if (render_mode == RenderMode::Albedo) {
                     renderer.albedo_texture.bind(0);
-                } else {
+                }
+                else if (render_mode == RenderMode::Depth) {
+                    renderer.depth_texture.bind(0);
+                }
+                else {
                     renderer.lit_hdr_texture.bind(0);
                 }
                 glDrawArrays(GL_TRIANGLES, 0, 3);
