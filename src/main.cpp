@@ -19,7 +19,7 @@
 
 using namespace OM3D;
 
-enum class RenderMode {
+enum RenderMode {
         Default = 0,
         Albedo = 1,
         Normals = 2,
@@ -427,7 +427,7 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("Zprepass");
 
                 renderer.depth_framebuffer.bind(true, false);
-                scene->render(static_cast<u32>(render_mode), i);
+                scene->render(render_mode, i);
             }
 
             // Render the scene
@@ -435,14 +435,14 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("G Buffer pass");
 
                 renderer.g_buffer_framebuffer.bind(false, true);
-                scene->render(static_cast<u32>(render_mode), i);
+                scene->render(render_mode, i);
             }
 
             {
                 PROFILE_GPU("Main pass");
 
                 renderer.main_framebuffer.bind(false, true);
-                scene->render(static_cast<u32>(render_mode), ++i);
+                scene->render(render_mode, ++i);
                 i %= 60;
             }
 

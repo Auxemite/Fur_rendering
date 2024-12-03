@@ -102,7 +102,8 @@ Material Material::textured_material() {
 Material Material::textured_normal_mapped_material() {
     Material material;
     std::cout << "Creating normal mapped material" << std::endl;
-    material._program = Program::from_files("lit.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+    material._program = Program::from_files("g_buffer.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+//    material._program = Program::from_files("lit.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
     return material;
 }
 
