@@ -38,7 +38,7 @@ void Scene::set_sun(glm::vec3 direction, glm::vec3 color) {
     _sun_color = color;
 }
 
-void Scene::render(int i) const {
+void Scene::render(const u32& renderMode, int i) const {
     // Fill and bind frame data buffer
     TypedBuffer<shader::FrameData> buffer(nullptr, 1);
     {
@@ -73,7 +73,7 @@ void Scene::render(int i) const {
         if(obj.is_visible(_camera))
         {
             count++;
-            obj.render();
+            obj.render(renderMode);
         }
     }
     if (i == 60)

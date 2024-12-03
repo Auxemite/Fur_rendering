@@ -19,11 +19,18 @@
 
 using namespace OM3D;
 
+enum class RenderMode {
+    Default = 0,
+    Albedo = 1,
+    Normals = 2,
+    Depth = 3,
+};
 
 static float delta_time = 0.0f;
 static std::unique_ptr<Scene> scene;
 static float exposure = 1.0;
 static std::vector<std::string> scene_files;
+static RenderMode render_mode = RenderMode::Default;
 
 namespace OM3D {
 extern bool audit_bindings_before_draw;
@@ -143,6 +150,24 @@ void gui(ImGuiRenderer& imgui) {
             ImGui::Text("%u point lights", u32(scene->point_lights().size()));
             ImGui::EndMenu();
         }
+
+        ImGui::Separator();
+        if(ImGui::BeginMenu("Debug")) {
+            if(ImGui::MenuItem("None")) {
+                render_mode = RenderMode::Default;
+            }
+            if(ImGui::MenuItem("Albedo")) {
+                render_mode = RenderMode::Albedo;
+            }
+            if(ImGui::MenuItem("Normals")) {
+                render_mode = RenderMode::Normals;
+            }
+            if(ImGui::MenuItem("Depth")) {
+                render_mode = RenderMode::Depth;
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::Separator();
 
         if(ImGui::MenuItem("GPU Profiler")) {
             open_gpu_profiler = true;
@@ -309,9 +334,13 @@ struct RendererState {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
             state.lit_hdr_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
             state.tone_mapped_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.albedo_texture = Texture(size, ImageFormat::RGBA8_sRGB);
+            state.normal_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
             state.main_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.lit_hdr_texture});
             state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
+            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
         }
 
         return state;
@@ -322,10 +351,13 @@ struct RendererState {
     Texture depth_texture;
     Texture lit_hdr_texture;
     Texture tone_mapped_texture;
+    Texture albedo_texture;
+    Texture normal_texture;
 
     Framebuffer depth_framebuffer;
     Framebuffer main_framebuffer;
     Framebuffer tone_map_framebuffer;
+    Framebuffer g_buffer_framebuffer;
 };
 
 
@@ -388,13 +420,12 @@ int main(int argc, char** argv) {
         // Draw everything
         {
             PROFILE_GPU("Frame");
-
             // Render for Z prepass
             {
                 PROFILE_GPU("Zprepass");
 
                 renderer.depth_framebuffer.bind(true, false);
-                scene->render(i);
+                scene->render(static_cast<u32>(render_mode), i);
             }
 
             // Render the scene
@@ -402,7 +433,7 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("Main pass");
 
                 renderer.main_framebuffer.bind(false, true);
-                scene->render(++i);
+                scene->render(static_cast<u32>(render_mode), ++i);
                 i %= 60;
             }
 
