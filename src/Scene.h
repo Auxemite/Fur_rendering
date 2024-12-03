@@ -9,7 +9,7 @@
 #include <memory>
 
 namespace OM3D {
-
+/*
     enum class RenderMode {
         Default = 0,
         Albedo = 1,
@@ -18,7 +18,7 @@ namespace OM3D {
     };
 
     static RenderMode render_mode = RenderMode::Default;
-
+*/
     class Scene : NonMovable {
 
     public:
