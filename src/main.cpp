@@ -423,28 +423,29 @@ int main(int argc, char** argv) {
         {
             PROFILE_GPU("Frame");
             // Render for Z prepass
-            {
-                PROFILE_GPU("Zprepass");
-
-                renderer.depth_framebuffer.bind(true, false);
-                scene->render(render_mode, i);
-            }
+//            {
+//                PROFILE_GPU("Zprepass");
+//
+//                renderer.depth_framebuffer.bind(true, false);
+//                scene->render(render_mode, i);
+//            }
 
             // Render the scene
             {
                 PROFILE_GPU("G Buffer pass");
 
-                renderer.g_buffer_framebuffer.bind(false, true);
+                renderer.g_buffer_framebuffer.bind(true, true);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 scene->render(render_mode, i);
             }
 
-            {
-                PROFILE_GPU("Main pass");
-
-                renderer.main_framebuffer.bind(false, true);
-                scene->render(render_mode, ++i);
-                i %= 60;
-            }
+//            {
+//                PROFILE_GPU("Main pass");
+//
+//                renderer.main_framebuffer.bind(false, true);
+//                scene->render(render_mode, ++i);
+//                i %= 60;
+//            }
 
             // Apply a tonemap in compute shader
             {
@@ -454,6 +455,7 @@ int main(int argc, char** argv) {
                 glFrontFace(GL_CW);
 
                 renderer.tone_map_framebuffer.bind(false, false);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 debug_program->bind();
                 debug_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
                 switch (render_mode)

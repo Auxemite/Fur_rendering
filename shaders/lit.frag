@@ -37,18 +37,6 @@ void main() {
 #else
     const vec3 normal = in_normal;
 #endif
-    if (render_mode == 1) {
-        out_color = vec4(in_color, 1.0);
-        return;
-    }
-    if (render_mode == 2) {
-        out_color = vec4(normal * 0.5 + 0.5, 1.0);
-        return;
-    }
-    if (render_mode == 3) {
-        out_color = vec4(in_tangent * 0.5 + 0.5, 1.0);
-        return;
-    }
 
     vec3 acc = frame.sun_color * max(0.0, dot(frame.sun_dir, normal)) + ambient;
 
