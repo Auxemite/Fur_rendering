@@ -21,16 +21,25 @@ layout(binding = 1) buffer PointLights {
 
 uniform uint render_mode;
 
+vec3 unproject(vec2 uv, float depth, mat4 inv_viewproj) {
+    const vec3 ndc = vec3(uv * 2.0 - vec2(1.0), depth);
+    const vec4 p = inv_viewproj * vec4(ndc, 1.0);
+    return p.xyz / p.w;
+}
+
 void main() {
     const ivec2 coord = ivec2(gl_FragCoord.xy);
     const vec3 color = texelFetch(in_albedo_texture, coord, 0).rgb;
     const vec3 normal = texelFetch(in_normals_texture, coord, 0).rgb;
 
     vec3 acc = vec3(0.0);
+    mat4 inv_viewproj = inverse(frame.camera.view_proj);
+    vec3 in_position = unproject(in_uv, gl_FragCoord.z, inv_viewproj);
 
     for(uint i = 0; i != frame.point_light_count; ++i) {
         PointLight light = point_lights[i];
-        const vec3 to_light = (light.position);// - in_position);
+//        const vec3 to_light = (light.position - in_position);
+        const vec3 to_light = light.position;
         const float dist = length(to_light);
         const vec3 light_vec = to_light / dist;
 

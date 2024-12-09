@@ -301,6 +301,8 @@ std::unique_ptr<Scene> create_default_scene() {
 
     // Load default cube model
     auto result = Scene::from_gltf(std::string(data_path) + "forest.glb");
+//    auto result = Scene::from_gltf(std::string(data_path) + "forest_huge.glb");
+//    auto result = Scene::from_gltf(std::string(data_path) + "cube.glb");
     ALWAYS_ASSERT(result.is_ok, "Unable to load default scene");
     scene = std::move(result.value);
 
@@ -445,27 +447,49 @@ int main(int argc, char** argv) {
 //            }
 
             // Apply a tonemap in compute shader
+            Span<const PointLight> lights = scene->point_lights();
+            TypedBuffer<shader::FrameData> buffer(nullptr, 1);
+            {
+                auto mapping = buffer.map(AccessType::WriteOnly);
+                mapping[0].camera.view_proj = scene->camera().view_proj_matrix();
+                mapping[0].point_light_count = u32(lights.size());
+                mapping[0].sun_color = glm::vec3(0.5); //scene->get_sun_color();
+                mapping[0].sun_dir = glm::normalize(scene->get_sun());
+            }
+            TypedBuffer<shader::PointLight> light_buffer(nullptr, std::max(lights.size(), size_t(1)));
+            {
+                auto mapping = light_buffer.map(AccessType::WriteOnly);
+                for(size_t i = 0; i != lights.size(); ++i) {
+                    const auto& light = lights[i];
+                    mapping[i] = {
+                            light.position(),
+                            light.radius(),
+                            light.color(),
+                            0.0f
+                    };
+                }
+            }
             {
                 PROFILE_GPU("Lighting pass");
 
-                // Tone Mapping Triangle is Facing away from camera
-                glFrontFace(GL_CW);
+//                glFrontFace(GL_CW);
+//                renderer.lit_framebuffer.bind(true, true);
+//                buffer.bind(BufferUsage::Uniform, 0);
+//                sun_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
+//                renderer.albedo_texture.bind(0);
+//                renderer.normal_texture.bind(1);
+//                sun_program->bind();
+//                glDrawArrays(GL_TRIANGLES, 0, 3);
 
+                glFrontFace(GL_CW);
                 renderer.lit_framebuffer.bind(true, true);
-                Span<const PointLight> lights = scene->point_lights();
-                TypedBuffer<shader::FrameData> buffer(nullptr, 1);
-                {
-                    auto mapping = buffer.map(AccessType::WriteOnly);
-                    mapping[0].camera.view_proj = scene->camera().view_proj_matrix();
-                    mapping[0].point_light_count = u32(lights.size());
-                    mapping[0].sun_color = scene->get_sun_color();
-                    mapping[0].sun_dir = glm::normalize(scene->get_sun());
-                }
                 buffer.bind(BufferUsage::Uniform, 0);
-                sun_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
+                light_buffer.bind(BufferUsage::Storage, 1);
+                lights_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
                 renderer.albedo_texture.bind(0);
                 renderer.normal_texture.bind(1);
-                sun_program->bind();
+//                renderer.lit_hdr_texture.bind(2);
+                lights_program->bind();
                 glDrawArrays(GL_TRIANGLES, 0, 3);
             }
 
