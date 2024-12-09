@@ -2,8 +2,6 @@
 
 #include <TypedBuffer.h>
 
-#include <shader_structs.h>
-
 namespace OM3D {
 
 Scene::Scene() {
@@ -36,6 +34,14 @@ const Camera& Scene::camera() const {
 void Scene::set_sun(glm::vec3 direction, glm::vec3 color) {
     _sun_direction = direction;
     _sun_color = color;
+}
+
+glm::vec3 Scene::get_sun() {
+    return _sun_direction;
+}
+
+glm::vec3 Scene::get_sun_color() {
+    return _sun_color;
 }
 
 void Scene::render(const u32& renderMode, int i) const {

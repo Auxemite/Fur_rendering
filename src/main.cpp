@@ -333,15 +333,15 @@ struct RendererState {
 
         if(state.size.x > 0 && state.size.y > 0) {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
-            state.lit_hdr_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
-            state.tone_mapped_texture = Texture(size, ImageFormat::RGBA8_UNORM);
             state.albedo_texture = Texture(size, ImageFormat::RGBA8_sRGB);
             state.normal_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.lit_hdr_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
+            state.tone_mapped_texture = Texture(size, ImageFormat::RGBA8_UNORM);
 
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
-            state.main_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.lit_hdr_texture});
-            state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
             state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
+            state.lit_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.lit_hdr_texture});
+            state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
         }
 
         return state;
@@ -351,19 +351,15 @@ struct RendererState {
 
     Texture depth_texture;
     Texture lit_hdr_texture;
-    Texture tone_mapped_texture;
     Texture albedo_texture;
     Texture normal_texture;
+    Texture tone_mapped_texture;
 
     Framebuffer depth_framebuffer;
-    Framebuffer main_framebuffer;
     Framebuffer tone_map_framebuffer;
     Framebuffer g_buffer_framebuffer;
+    Framebuffer lit_framebuffer;
 };
-
-
-
-
 
 int main(int argc, char** argv) {
     DEBUG_ASSERT([] { std::cout << "Debug asserts enabled" << std::endl; return true; }());
@@ -392,6 +388,8 @@ int main(int argc, char** argv) {
 
     auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
     auto debug_program = Program::from_files("debug.frag", "screen.vert");
+    auto sun_program = Program::from_files("sun.frag", "screen.vert");
+    auto lights_program = Program::from_files("lights.frag", "screen.vert");
     RendererState renderer;
 
     int i = 0;
@@ -423,19 +421,18 @@ int main(int argc, char** argv) {
         {
             PROFILE_GPU("Frame");
             // Render for Z prepass
-//            {
-//                PROFILE_GPU("Zprepass");
-//
-//                renderer.depth_framebuffer.bind(true, false);
-//                scene->render(render_mode, i);
-//            }
+            {
+                PROFILE_GPU("Zprepass");
+
+                renderer.depth_framebuffer.bind(true, false);
+                scene->render(render_mode, i);
+            }
 
             // Render the scene
             {
                 PROFILE_GPU("G Buffer pass");
 
-                renderer.g_buffer_framebuffer.bind(true, true);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                renderer.g_buffer_framebuffer.bind(false, true);
                 scene->render(render_mode, i);
             }
 
@@ -449,65 +446,72 @@ int main(int argc, char** argv) {
 
             // Apply a tonemap in compute shader
             {
-                PROFILE_GPU("Final Render");
+                PROFILE_GPU("Lighting pass");
 
                 // Tone Mapping Triangle is Facing away from camera
                 glFrontFace(GL_CW);
 
-                renderer.tone_map_framebuffer.bind(false, false);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                debug_program->bind();
-                debug_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
-                switch (render_mode)
+                renderer.lit_framebuffer.bind(true, true);
+                Span<const PointLight> lights = scene->point_lights();
+                TypedBuffer<shader::FrameData> buffer(nullptr, 1);
                 {
-                    case RenderMode::Normals:
-                        renderer.normal_texture.bind(0);
-                        break;
-
-                    case RenderMode::Albedo:
-                        renderer.albedo_texture.bind(0);
-                        break;
-
-                    case RenderMode::Depth:
-                        renderer.depth_texture.bind(0);
-                        break;
-
-                    default:
-                        renderer.lit_hdr_texture.bind(0);
-                        break;
+                    auto mapping = buffer.map(AccessType::WriteOnly);
+                    mapping[0].camera.view_proj = scene->camera().view_proj_matrix();
+                    mapping[0].point_light_count = u32(lights.size());
+                    mapping[0].sun_color = scene->get_sun_color();
+                    mapping[0].sun_dir = glm::normalize(scene->get_sun());
                 }
-
+                buffer.bind(BufferUsage::Uniform, 0);
+                sun_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
+                renderer.albedo_texture.bind(0);
+                renderer.normal_texture.bind(1);
+                sun_program->bind();
                 glDrawArrays(GL_TRIANGLES, 0, 3);
             }
 
+            // Apply a tonemap in compute shader
+            {
+                PROFILE_GPU("Tonemap");
+
+                // Tone Mapping Triangle is Facing away from camera
+                glFrontFace(GL_CW);
+
+                renderer.tone_map_framebuffer.bind(false, true);
+                if (render_mode != RenderMode::Default) {
+                    debug_program->bind();
+                    debug_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
+                    switch (render_mode)
+                    {
+                        case RenderMode::Normals:
+                            renderer.normal_texture.bind(0);
+                            break;
+
+                        case RenderMode::Depth:
+                            renderer.depth_texture.bind(0);
+                            break;
+
+                        default:
+                            renderer.albedo_texture.bind(0);
+                            break;
+                    }
+
+                    glDrawArrays(GL_TRIANGLES, 0, 3);
+                }
+                else {
+                    tonemap_program->bind();
+                    tonemap_program->set_uniform(HASH("exposure"), exposure);
+                    renderer.lit_hdr_texture.bind(0);
+                }
+                glDrawArrays(GL_TRIANGLES, 0, 3);
+            }
+
+            // Blit tonemap result to screen
             {
                 PROFILE_GPU("Blit");
 
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 renderer.tone_map_framebuffer.blit();
             }
-
-            // Apply a tonemap in compute shader
-//            {
-//                PROFILE_GPU("Tonemap");
-//
-//                // Tone Mapping Triangle is Facing away from camera
-//                glFrontFace(GL_CW);
-//
-//                renderer.tone_map_framebuffer.bind(false, true);
-//                tonemap_program->bind();
-//                tonemap_program->set_uniform(HASH("exposure"), exposure);
-//                renderer.lit_hdr_texture.bind(0);
-//                glDrawArrays(GL_TRIANGLES, 0, 3);
-//            }
-
-            // Blit tonemap result to screen
-//            {
-//                PROFILE_GPU("Blit");
-//
-//                glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//                renderer.tone_map_framebuffer.blit();
-//            }
 
             // Draw GUI on top
             gui(imgui);

@@ -4,6 +4,7 @@
 #include <SceneObject.h>
 #include <PointLight.h>
 #include <Camera.h>
+#include <shader_structs.h>
 
 #include <vector>
 #include <memory>
@@ -28,6 +29,8 @@ namespace OM3D {
         const Camera& camera() const;
 
         void set_sun(glm::vec3 direction, glm::vec3 color = glm::vec3(1.0f));
+        glm::vec3 get_sun();
+        glm::vec3 get_sun_color();
 
     private:
         std::vector<SceneObject> _objects;
