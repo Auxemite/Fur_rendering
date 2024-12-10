@@ -10,6 +10,7 @@ layout(location = 0) in vec2 in_uv;
 
 layout(binding = 0) uniform sampler2D in_albedo_texture;
 layout(binding = 1) uniform sampler2D in_normals_texture;
+layout(binding = 2) uniform sampler2D in_depth_texture;
 
 layout(binding = 0) uniform Data {
     FrameData frame;
@@ -31,10 +32,11 @@ void main() {
     const ivec2 coord = ivec2(gl_FragCoord.xy);
     const vec3 color = texelFetch(in_albedo_texture, coord, 0).rgb;
     const vec3 normal = texelFetch(in_normals_texture, coord, 0).rgb;
+    const float depth = texelFetch(in_depth_texture, coord, 0).r;
 
     vec3 acc = vec3(0.0);
     mat4 inv_viewproj = inverse(frame.camera.view_proj);
-    vec3 in_position = unproject(in_uv, gl_FragCoord.z, inv_viewproj);
+    vec3 in_position = unproject(in_uv, depth, inv_viewproj);
 
     for(uint i = 0; i != frame.point_light_count; ++i) {
         PointLight light = point_lights[i];

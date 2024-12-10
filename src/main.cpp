@@ -342,7 +342,7 @@ struct RendererState {
 
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
             state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
-            state.lit_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.lit_hdr_texture});
+            state.lit_framebuffer = Framebuffer(nullptr, std::array{&state.lit_hdr_texture});
             state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
         }
 
@@ -482,12 +482,13 @@ int main(int argc, char** argv) {
 //                glDrawArrays(GL_TRIANGLES, 0, 3);
 
                 glFrontFace(GL_CW);
-                renderer.lit_framebuffer.bind(true, true);
+                renderer.lit_framebuffer.bind(false, true);
                 buffer.bind(BufferUsage::Uniform, 0);
                 light_buffer.bind(BufferUsage::Storage, 1);
                 lights_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
                 renderer.albedo_texture.bind(0);
                 renderer.normal_texture.bind(1);
+                renderer.depth_texture.bind(2);
 //                renderer.lit_hdr_texture.bind(2);
                 lights_program->bind();
                 glDrawArrays(GL_TRIANGLES, 0, 3);
