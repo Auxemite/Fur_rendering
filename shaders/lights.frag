@@ -28,20 +28,25 @@ vec3 unproject(vec2 uv, float depth, mat4 inv_viewproj) {
     return p.xyz / p.w;
 }
 
+//const float width = 1600;
+//const float height = 900;
+
 void main() {
     const ivec2 coord = ivec2(gl_FragCoord.xy);
     const vec3 color = texelFetch(in_albedo_texture, coord, 0).rgb;
     const vec3 normal = texelFetch(in_normals_texture, coord, 0).rgb;
-    const float depth = texelFetch(in_depth_texture, coord, 0).r;
+    const float depth = pow(texelFetch(in_depth_texture, coord, 0).r, 0.35);
 
     vec3 acc = vec3(0.0);
     mat4 inv_viewproj = inverse(frame.camera.view_proj);
-    vec3 in_position = unproject(in_uv, depth, inv_viewproj);
+//    const float coord_x = gl_FragCoord.x / width;
+//    const float coord_y = gl_FragCoord.y / height;
+    const vec3 in_position = unproject(in_uv, depth, inv_viewproj);
 
     for(uint i = 0; i != frame.point_light_count; ++i) {
         PointLight light = point_lights[i];
-//        const vec3 to_light = (light.position - in_position);
-        const vec3 to_light = light.position;
+        const vec3 to_light = (light.position - in_position);
+//        const vec3 to_light = light.position;
         const float dist = length(to_light);
         const vec3 light_vec = to_light / dist;
 
