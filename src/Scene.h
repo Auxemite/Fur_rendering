@@ -17,7 +17,9 @@ namespace OM3D {
 
         static Result<std::unique_ptr<Scene>> from_gltf(const std::string& file_name);
 
-        void render(const u32& renderMode, int i) const;
+        TypedBuffer<shader::FrameData> get_sun_frame_data();
+        TypedBuffer<shader::PointLight> get_lights_frame_data();
+        void render(const RenderMode& renderMode, int i) const;
 
         void add_object(SceneObject obj);
         void add_light(PointLight obj);

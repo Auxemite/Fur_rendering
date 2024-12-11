@@ -19,15 +19,7 @@
 
 using namespace OM3D;
 
-enum RenderMode {
-        Default = 0,
-        Albedo = 1,
-        Normals = 2,
-        Depth = 3,
-    };
-
 static RenderMode render_mode = RenderMode::Default;
-
 static float delta_time = 0.0f;
 static std::unique_ptr<Scene> scene;
 static float exposure = 1.0;
@@ -427,7 +419,7 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("Zprepass");
 
                 renderer.depth_framebuffer.bind(true, false);
-                scene->render(render_mode, i);
+                scene->render(RenderMode::GBuffer, i);
             }
 
             // Render the scene
@@ -435,7 +427,7 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("G Buffer pass");
 
                 renderer.g_buffer_framebuffer.bind(false, true);
-                scene->render(render_mode, i);
+                scene->render(RenderMode::GBuffer, i);
             }
 
 //            {
@@ -446,40 +438,11 @@ int main(int argc, char** argv) {
 //                i %= 60;
 //            }
 
-            // Apply a tonemap in compute shader
-            Span<const PointLight> lights = scene->point_lights();
-            TypedBuffer<shader::FrameData> buffer(nullptr, 1);
-            {
-                auto mapping = buffer.map(AccessType::WriteOnly);
-                mapping[0].camera.view_proj = scene->camera().view_proj_matrix();
-                mapping[0].point_light_count = u32(lights.size());
-                mapping[0].sun_color = glm::vec3(0.5); //scene->get_sun_color();
-                mapping[0].sun_dir = glm::normalize(scene->get_sun());
-            }
-            TypedBuffer<shader::PointLight> light_buffer(nullptr, std::max(lights.size(), size_t(1)));
-            {
-                auto mapping = light_buffer.map(AccessType::WriteOnly);
-                for(size_t i = 0; i != lights.size(); ++i) {
-                    const auto& light = lights[i];
-                    mapping[i] = {
-                            light.position(),
-                            light.radius(),
-                            light.color(),
-                            0.0f
-                    };
-                }
-            }
             {
                 PROFILE_GPU("Lighting pass");
 
-//                glFrontFace(GL_CW);
-//                renderer.lit_framebuffer.bind(true, true);
-//                buffer.bind(BufferUsage::Uniform, 0);
-//                sun_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
-//                renderer.albedo_texture.bind(0);
-//                renderer.normal_texture.bind(1);
-//                sun_program->bind();
-//                glDrawArrays(GL_TRIANGLES, 0, 3);
+                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
+                TypedBuffer<shader::PointLight> light_buffer = scene->get_lights_frame_data();
 
                 glFrontFace(GL_CW);
                 renderer.lit_framebuffer.bind(false, true);
@@ -489,8 +452,20 @@ int main(int argc, char** argv) {
                 renderer.albedo_texture.bind(0);
                 renderer.normal_texture.bind(1);
                 renderer.depth_texture.bind(2);
-//                renderer.lit_hdr_texture.bind(2);
                 lights_program->bind();
+                glDrawArrays(GL_TRIANGLES, 0, 3);
+
+//                renderer.lit_framebuffer.bind(false, true);
+//                scene->render(RenderMode::Lit, i);
+
+                glFrontFace(GL_CW);
+                renderer.lit_framebuffer.bind(false, false);
+                buffer.bind(BufferUsage::Uniform, 0);
+                sun_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
+                renderer.albedo_texture.bind(0);
+                renderer.normal_texture.bind(1);
+                renderer.lit_hdr_texture.bind(2);
+                sun_program->bind();
                 glDrawArrays(GL_TRIANGLES, 0, 3);
             }
 

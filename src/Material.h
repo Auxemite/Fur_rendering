@@ -9,9 +9,19 @@
 
 namespace OM3D {
 
+enum RenderMode {
+    Default = 0,
+    Albedo = 1,
+    Normals = 2,
+    Depth = 3,
+    GBuffer = 4,
+    Lit = 5,
+};
+
 enum class BlendMode {
     None,
     Alpha,
+    Additif
 };
 
 enum class DepthTestMode {
@@ -37,7 +47,7 @@ class Material {
         }
 
 
-        void bind() const;
+        void bind(const RenderMode& renderMode) const;
 
         static std::shared_ptr<Material> empty_material();
         static Material textured_material();
@@ -46,6 +56,7 @@ class Material {
 
     private:
         std::shared_ptr<Program> _program;
+        std::shared_ptr<Program> _light_program;
         std::vector<std::pair<u32, std::shared_ptr<Texture>>> _textures;
 
         BlendMode _blend_mode = BlendMode::None;

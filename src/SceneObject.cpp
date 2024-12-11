@@ -25,14 +25,13 @@ SceneObject::SceneObject(std::shared_ptr<StaticMesh> mesh, std::shared_ptr<Mater
         }
 }
 
-void SceneObject::render(const u32& renderMode) const {
+void SceneObject::render(const RenderMode& renderMode) const {
     if(!_material || !_mesh) {
         return;
     }
 
-    _material->set_uniform(HASH("render_mode"), renderMode);
     _material->set_uniform(HASH("model"), transform());
-    _material->bind();
+    _material->bind(renderMode);
     _mesh->draw();
 }
 

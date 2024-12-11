@@ -23,8 +23,6 @@ layout(binding = 1) buffer PointLights {
     PointLight point_lights[];
 };
 
-uniform uint render_mode;
-
 const vec3 ambient = vec3(0.0);
 
 void main() {

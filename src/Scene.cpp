@@ -44,7 +44,36 @@ glm::vec3 Scene::get_sun_color() {
     return _sun_color;
 }
 
-void Scene::render(const u32& renderMode, int i) const {
+TypedBuffer<shader::FrameData> Scene::get_sun_frame_data() {
+    TypedBuffer<shader::FrameData> buffer(nullptr, 1);
+    {
+        auto mapping = buffer.map(AccessType::WriteOnly);
+        mapping[0].camera.view_proj = _camera.view_proj_matrix();
+        mapping[0].point_light_count = u32(_point_lights.size());
+        mapping[0].sun_color = _sun_color;
+        mapping[0].sun_dir = glm::normalize(_sun_direction);
+    }
+    return buffer;
+}
+
+TypedBuffer<shader::PointLight> Scene::get_lights_frame_data() {
+    TypedBuffer<shader::PointLight> light_buffer(nullptr, std::max(_point_lights.size(), size_t(1)));
+    {
+        auto mapping = light_buffer.map(AccessType::WriteOnly);
+        for(size_t i = 0; i != _point_lights.size(); ++i) {
+            const auto& light = _point_lights[i];
+            mapping[i] = {
+                    light.position(),
+                    light.radius(),
+                    light.color(),
+                    0.0f
+            };
+        }
+    }
+    return light_buffer;
+}
+
+void Scene::render(const RenderMode& renderMode, int i) const {
     // Fill and bind frame data buffer
     TypedBuffer<shader::FrameData> buffer(nullptr, 1);
     {
@@ -79,6 +108,7 @@ void Scene::render(const u32& renderMode, int i) const {
         if(obj.is_visible(_camera))
         {
             count++;
+            // TODO calulate what lights are used for this object and give it to the shader
             obj.render(renderMode);
         }
     }
