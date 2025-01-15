@@ -1,6 +1,7 @@
 #include "Scene.h"
 
 #include <TypedBuffer.h>
+#include <iostream>
 
 namespace OM3D {
 
@@ -9,6 +10,12 @@ Scene::Scene() {
 
 void Scene::add_object(SceneObject obj) {
     _objects.emplace_back(std::move(obj));
+}
+
+void Scene::copy_object(int i, const glm::vec3& pos) {
+    SceneObject obj = _objects[i];
+    obj.set_center(pos);
+    _objects.emplace_back(obj);
 }
 
 void Scene::add_light(PointLight obj) {
@@ -26,6 +33,10 @@ Span<const PointLight> Scene::point_lights() const {
 Camera& Scene::camera() {
     return _camera;
 }
+
+void Scene::set_camera(const Camera& camera) {
+    _camera = camera;
+};
 
 const Camera& Scene::camera() const {
     return _camera;
@@ -73,7 +84,7 @@ TypedBuffer<shader::PointLight> Scene::get_lights_frame_data() {
     return light_buffer;
 }
 
-void Scene::render(const RenderMode& renderMode, int i) const {
+void Scene::render(const RenderMode& renderMode, int rendered_nb) const {
     // Fill and bind frame data buffer
     TypedBuffer<shader::FrameData> buffer(nullptr, 1);
     {
@@ -87,15 +98,15 @@ void Scene::render(const RenderMode& renderMode, int i) const {
 
     // Fill and bind lights buffer
     TypedBuffer<shader::PointLight> light_buffer(nullptr, std::max(_point_lights.size(), size_t(1)));
-    {
-        auto mapping = light_buffer.map(AccessType::WriteOnly);
-        for(size_t i = 0; i != _point_lights.size(); ++i) {
-            const auto& light = _point_lights[i];
+    auto mapping = light_buffer.map(AccessType::WriteOnly);
+    for(size_t i = 0; i != _point_lights.size(); ++i) {
+        const auto& light = _point_lights[i];
+        if (light.is_visible(_camera)) {
             mapping[i] = {
-                light.position(),
-                light.radius(),
-                light.color(),
-                0.0f
+                    light.position(),
+                    light.radius(),
+                    light.color(),
+                    0.0f
             };
         }
     }
@@ -107,12 +118,11 @@ void Scene::render(const RenderMode& renderMode, int i) const {
     {
         if(obj.is_visible(_camera))
         {
-            count++;
-            // TODO calulate what lights are used for this object and give it to the shader
             obj.render(renderMode);
+            count++;
         }
     }
-    if (i == 60)
+    if (rendered_nb == 60)
         printf("Rendered %d objects\n", count);
 }
 

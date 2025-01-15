@@ -7,6 +7,14 @@
 
 namespace OM3D {
 
+static bool in_plane(glm::vec3 plane_normal, const glm::vec3& origin, const glm::vec3 center, const float radius)
+{
+    plane_normal = glm::normalize(plane_normal);
+    glm::vec3 direction = center - origin;
+    float d = glm::dot(plane_normal, direction);
+    return d >= -radius;
+}
+
 class PointLight {
 
     public:
@@ -36,6 +44,21 @@ class PointLight {
         float radius() const {
             return _radius;
         }
+
+        bool is_visible(const Camera& camera) const
+        {
+            const glm::vec3 origin = camera.position();
+            const Frustum frut = camera.build_frustum();
+
+            // Update radius, assuming that the scales correspond to diameter (imply *0.5f)
+            const float radius = _radius;
+
+            return (in_plane(frut._near_normal, origin, _position, radius) &&
+                    in_plane(frut._left_normal, origin, _position, radius) &&
+                    in_plane(frut._right_normal, origin, _position, radius) &&
+                    in_plane(frut._top_normal, origin, _position, radius) &&
+                    in_plane(frut._bottom_normal, origin, _position, radius));
+        };
 
     private:
         glm::vec3 _position = {};

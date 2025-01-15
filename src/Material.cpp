@@ -80,18 +80,10 @@ void Material::bind(const RenderMode& renderMode) const {
         break;
     }
 
-    if (renderMode == RenderMode::Lit) {
-        for (const auto &texture: _textures) {
-            texture.second->bind(texture.first);
-        }
-        _light_program->bind();
+    for (const auto &texture: _textures) {
+        texture.second->bind(texture.first);
     }
-    else {
-        for (const auto &texture: _textures) {
-            texture.second->bind(texture.first);
-        }
-        _program->bind();
-    }
+    _program->bind();
 }
 
 std::shared_ptr<Material> Material::empty_material() {
@@ -101,7 +93,6 @@ std::shared_ptr<Material> Material::empty_material() {
     if(!material) {
         material = std::make_shared<Material>();
         material->_program = Program::from_files("lit.frag", "basic.vert");
-        material->_light_program = Program::from_files("lights.frag", "screen.vert");
         weak_material = material;
     }
     return material;
@@ -111,7 +102,6 @@ Material Material::textured_material() {
     Material material;
     std::cout << "Creating texture material" << std::endl;
     material._program = Program::from_files("lit.frag", "basic.vert", {"TEXTURED"});
-    material._light_program = Program::from_files("lights.frag", "screen.vert", {"TEXTURED"});
     return material;
 }
 
@@ -119,7 +109,6 @@ Material Material::textured_normal_mapped_material() {
     Material material;
     std::cout << "Creating normal mapped material" << std::endl;
     material._program = Program::from_files("g_buffer.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
-    material._light_program = Program::from_files("lights.frag", "screen.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
 //    material._program = Program::from_files("lit.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
     return material;
 }

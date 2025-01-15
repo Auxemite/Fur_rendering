@@ -15,14 +15,6 @@ layout(location = 5) in vec3 in_bitangent;
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
 
-layout(binding = 0) uniform Data {
-    FrameData frame;
-};
-
-layout(binding = 1) buffer PointLights {
-    PointLight point_lights[];
-};
-
 const vec3 ambient = vec3(0.0);
 
 void main() {

@@ -22,6 +22,7 @@ using namespace OM3D;
 static RenderMode render_mode = RenderMode::Default;
 static float delta_time = 0.0f;
 static std::unique_ptr<Scene> scene;
+static std::unique_ptr<Scene> sphere_scene;
 static float exposure = 1.0;
 static std::vector<std::string> scene_files;
 
@@ -288,35 +289,33 @@ void gui(ImGuiRenderer& imgui) {
 
 
 
-std::unique_ptr<Scene> create_default_scene() {
-    auto scene = std::make_unique<Scene>();
-
+std::unique_ptr<Scene> create_default_scene(const std::string& scene_file) {
+    auto new_scene = std::make_unique<Scene>();
     // Load default cube model
-    auto result = Scene::from_gltf(std::string(data_path) + "forest.glb");
-//    auto result = Scene::from_gltf(std::string(data_path) + "forest_huge.glb");
-//    auto result = Scene::from_gltf(std::string(data_path) + "cube.glb");
-    ALWAYS_ASSERT(result.is_ok, "Unable to load default scene");
-    scene = std::move(result.value);
 
-    scene->set_sun(glm::vec3(0.2f, 1.0f, 0.1f), glm::vec3(1.0f));
+    auto result = Scene::from_gltf(std::string(data_path) + scene_file);
+    ALWAYS_ASSERT(result.is_ok, "Unable to load default scene");
+    new_scene = std::move(result.value);
+
+    new_scene->set_sun(glm::vec3(0.2f, 1.0f, 0.1f), glm::vec3(1.0f));
 
     // Add lights
-    {
-        PointLight light;
-        light.set_position(glm::vec3(1.0f, 2.0f, 4.0f));
-        light.set_color(glm::vec3(0.0f, 50.0f, 0.0f));
-        light.set_radius(100.0f);
-        scene->add_light(std::move(light));
-    }
-    {
-        PointLight light;
-        light.set_position(glm::vec3(1.0f, 2.0f, -4.0f));
-        light.set_color(glm::vec3(50.0f, 0.0f, 0.0f));
-        light.set_radius(50.0f);
-        scene->add_light(std::move(light));
-    }
+//    {
+//        PointLight light;
+//        light.set_position(glm::vec3(1.0f, 2.0f, 4.0f));
+//        light.set_color(glm::vec3(0.0f, 50.0f, 0.0f));
+//        light.set_radius(100.0f);
+//        scene->add_light(light);
+//    }
+//    {
+//        PointLight light;
+//        light.set_position(glm::vec3(1.0f, 2.0f, -4.0f));
+//        light.set_color(glm::vec3(50.0f, 0.0f, 0.0f));
+//        light.set_radius(50.0f);
+//        scene->add_light(light);
+//    }
 
-    return scene;
+    return new_scene;
 }
 
 struct RendererState {
@@ -337,7 +336,6 @@ struct RendererState {
             state.lit_framebuffer = Framebuffer(nullptr, std::array{&state.lit_hdr_texture});
             state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
         }
-
         return state;
     }
 
@@ -350,6 +348,7 @@ struct RendererState {
     Texture tone_mapped_texture;
 
     Framebuffer depth_framebuffer;
+    Framebuffer test_framebuffer;
     Framebuffer tone_map_framebuffer;
     Framebuffer g_buffer_framebuffer;
     Framebuffer lit_framebuffer;
@@ -378,7 +377,36 @@ int main(int argc, char** argv) {
 
     ImGuiRenderer imgui(window);
 
-    scene = create_default_scene();
+    scene = create_default_scene("bistro_lights.glb");
+//    scene = create_default_scene("forest.glb");
+//    scene = create_default_scene("forest_huge.glb");
+//    scene = create_default_scene("cube.glb");
+    sphere_scene = create_default_scene("sphere.glb");
+    std::vector<PointLight> lights;
+    {
+        PointLight light;
+        light.set_position(glm::vec3(1.0f, 2.0f, 4.0f));
+        light.set_color(glm::vec3(0.0f, 50.0f, 0.0f));
+        light.set_radius(100.0f);
+        lights.push_back(light);
+    }
+    {
+        PointLight light;
+        light.set_position(glm::vec3(1.0f, 2.0f, -4.0f));
+        light.set_color(glm::vec3(50.0f, 0.0f, 0.0f));
+        light.set_radius(50.0f);
+        lights.push_back(light);
+    }
+
+    for (const auto & light : lights) {
+        const glm::vec3& pos = light.position();
+        sphere_scene->copy_object(0, pos);
+    }
+    // print infos of the scene objects
+//    for(const SceneObject& obj : sphere_scene->objects())
+//    {
+//        obj.print_info();
+//    }
 
     auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
     auto debug_program = Program::from_files("debug.frag", "screen.vert");
@@ -439,29 +467,29 @@ int main(int argc, char** argv) {
 //            }
 
             {
-                PROFILE_GPU("Lighting pass");
+                PROFILE_GPU("Lighting pass : Point lights");
 
                 TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
                 TypedBuffer<shader::PointLight> light_buffer = scene->get_lights_frame_data();
+                // print light radiuses
 
                 glFrontFace(GL_CW);
                 renderer.lit_framebuffer.bind(false, true);
                 buffer.bind(BufferUsage::Uniform, 0);
                 light_buffer.bind(BufferUsage::Storage, 1);
-                lights_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
                 renderer.albedo_texture.bind(0);
                 renderer.normal_texture.bind(1);
                 renderer.depth_texture.bind(2);
                 lights_program->bind();
                 glDrawArrays(GL_TRIANGLES, 0, 3);
+            }
+            {
+                PROFILE_GPU("Lighting pass : Sun");
 
-//                renderer.lit_framebuffer.bind(false, true);
-//                scene->render(RenderMode::Lit, i);
-
+                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
                 glFrontFace(GL_CW);
                 renderer.lit_framebuffer.bind(false, false);
                 buffer.bind(BufferUsage::Uniform, 0);
-                sun_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
                 renderer.albedo_texture.bind(0);
                 renderer.normal_texture.bind(1);
                 renderer.lit_hdr_texture.bind(2);

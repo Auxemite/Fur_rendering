@@ -19,9 +19,10 @@ namespace OM3D {
 
         TypedBuffer<shader::FrameData> get_sun_frame_data();
         TypedBuffer<shader::PointLight> get_lights_frame_data();
-        void render(const RenderMode& renderMode, int i) const;
+        void render(const RenderMode& renderMode, int rendered_nb) const;
 
         void add_object(SceneObject obj);
+        void copy_object(int i, const glm::vec3& pos);
         void add_light(PointLight obj);
 
         Span<const SceneObject> objects() const;
@@ -29,6 +30,7 @@ namespace OM3D {
 
         Camera& camera();
         const Camera& camera() const;
+        void set_camera(const Camera& camera);
 
         void set_sun(glm::vec3 direction, glm::vec3 color = glm::vec3(1.0f));
         glm::vec3 get_sun();

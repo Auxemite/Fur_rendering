@@ -56,7 +56,6 @@ class Material {
 
     private:
         std::shared_ptr<Program> _program;
-        std::shared_ptr<Program> _light_program;
         std::vector<std::pair<u32, std::shared_ptr<Texture>>> _textures;
 
         BlendMode _blend_mode = BlendMode::None;

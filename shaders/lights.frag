@@ -11,6 +11,7 @@ layout(location = 0) in vec2 in_uv;
 layout(binding = 0) uniform sampler2D in_albedo_texture;
 layout(binding = 1) uniform sampler2D in_normals_texture;
 layout(binding = 2) uniform sampler2D in_depth_texture;
+layout(binding = 3) uniform sampler2D in_light_texture;
 
 layout(binding = 0) uniform Data {
     FrameData frame;
@@ -26,19 +27,18 @@ vec3 unproject(vec2 uv, float depth, mat4 inv_viewproj) {
     return p.xyz / p.w;
 }
 
-const float width = 1600;
-const float height = 900;
-
 void main() {
     const ivec2 coord = ivec2(gl_FragCoord.xy);
     const vec3 color = texelFetch(in_albedo_texture, coord, 0).rgb;
     const vec3 normal = texelFetch(in_normals_texture, coord, 0).rgb;
-    const float depth = pow(texelFetch(in_depth_texture, coord, 0).r, 0.35);
+    const float depth = texelFetch(in_depth_texture, coord, 0).r;
+    const vec3 light = texelFetch(in_light_texture, coord, 0).rgb;
+//    const float depth = texelFetch(in_depth_texture, coord, 0).r;
 
     vec3 acc = vec3(0.0);
     mat4 inv_viewproj = inverse(frame.camera.view_proj);
-    const float coord_x = gl_FragCoord.x / width;
-    const float coord_y = gl_FragCoord.y / height;
+    const float coord_x = gl_FragCoord.x / textureSize(in_albedo_texture, 0).x;
+    const float coord_y = gl_FragCoord.y / textureSize(in_albedo_texture, 0).y;
     const vec3 in_position = unproject(vec2(coord_x, coord_y), depth, inv_viewproj);
 //    const vec3 in_position = unproject(in_uv, depth, inv_viewproj);
 
