@@ -16,11 +16,14 @@ class SceneObject {
     public:
         SceneObject(std::shared_ptr<StaticMesh> mesh = nullptr, std::shared_ptr<Material> material = nullptr);
 
-        void render() const;
+        void render(const RenderMode& renderMode) const;
 
         void set_transform(const glm::mat4& tr);
+        void set_center(const glm::vec3& center);
         const glm::mat4& transform() const;
         bool is_visible(const Camera& camera) const;
+        bool is_in_range(const glm::vec3& position, const float& radius) const;
+        void print_info() const;
 
 
     private:

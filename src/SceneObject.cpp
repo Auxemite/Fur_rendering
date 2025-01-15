@@ -2,6 +2,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/norm.hpp>
+#include <iostream>
 
 namespace OM3D {
 
@@ -25,18 +26,22 @@ SceneObject::SceneObject(std::shared_ptr<StaticMesh> mesh, std::shared_ptr<Mater
         }
 }
 
-void SceneObject::render() const {
+void SceneObject::render(const RenderMode& renderMode) const {
     if(!_material || !_mesh) {
         return;
     }
 
     _material->set_uniform(HASH("model"), transform());
-    _material->bind();
+    _material->bind(renderMode);
     _mesh->draw();
 }
 
 void SceneObject::set_transform(const glm::mat4& tr) {
     _transform = tr;
+}
+
+void SceneObject::set_center(const glm::vec3& center) {
+    _center = center;
 }
 
 /*
@@ -51,15 +56,18 @@ struct Frustum {
 };
 */
 
-bool in_plane(glm::vec3 plane_normal, const glm::vec3& origin, const glm::vec3 center, const float radius)
+static bool in_plane(glm::vec3 plane_normal, const glm::vec3& origin, const glm::vec3 center, const float radius)
 {
     plane_normal = glm::normalize(plane_normal);
-
     glm::vec3 direction = center - origin;
-
     float d = glm::dot(plane_normal, direction);
-
     return d >= -radius;
+}
+
+void SceneObject::print_info() const {
+    std::cout << "SceneObject: " << std::endl;
+    std::cout << "Center: " << _center.x << ", " << _center.y << ", " << _center.z << std::endl;
+    std::cout << "Radius: " << _radius << std::endl;
 }
 
 bool SceneObject::is_visible(const Camera& camera) const
@@ -85,6 +93,11 @@ bool SceneObject::is_visible(const Camera& camera) const
             in_plane(frut._top_normal, origin, center, radius) &&
             in_plane(frut._bottom_normal, origin, center, radius));
 };
+
+bool SceneObject::is_in_range(const glm::vec3& position, const float& radius) const
+{
+    return glm::length(position - _center) <= radius;
+}
 
 const glm::mat4& SceneObject::transform() const {
     return _transform;

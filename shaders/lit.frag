@@ -4,8 +4,6 @@
 
 // fragment shader of the main lighting pass
 
-// #define DEBUG_NORMAL
-
 layout(location = 0) out vec4 out_color;
 
 layout(location = 0) in vec3 in_normal;
@@ -25,6 +23,8 @@ layout(binding = 0) uniform Data {
 layout(binding = 1) buffer PointLights {
     PointLight point_lights[];
 };
+
+uniform uint render_mode;
 
 const vec3 ambient = vec3(0.0);
 
@@ -59,10 +59,6 @@ void main() {
 
 #ifdef TEXTURED
     out_color *= texture(in_texture, in_uv);
-#endif
-
-#ifdef DEBUG_NORMAL
-    out_color = vec4(normal * 0.5 + 0.5, 1.0);
 #endif
 }
 
