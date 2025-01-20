@@ -44,7 +44,7 @@ void SceneObject::render(const RenderMode& renderMode, bool fur) const {
         float density = 0.5f;
         for (int i = 0; i < nb_shell; ++i) {
             scale += 0.01f;
-            density /= 1.5;
+            density /= 1.5f;
             _material->set_fur_uniform(HASH("model"), transform);
             _material->set_fur_uniform(HASH("density"), density);
             _material->set_fur_uniform(HASH("scale"), scale);

@@ -383,7 +383,7 @@ int main(int argc, char** argv) {
     scene = create_default_scene("forest.glb");
 //    scene = create_default_scene("forest_huge.glb");
 //    scene = create_default_scene("cube.glb");
-    sphere_scene = create_default_scene("sphere2.glb");
+    sphere_scene = create_default_scene("sphere.glb");
     scene->add_object(sphere_scene->objects()[0]);
     std::vector<PointLight> lights;
     {

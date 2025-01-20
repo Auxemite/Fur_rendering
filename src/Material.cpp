@@ -30,7 +30,7 @@ void Material::set_texture(u32 slot, std::shared_ptr<Texture> tex) {
     }
 }
 
-void Material::bind(const RenderMode& renderMode, bool fur) const {
+void Material::bind([[__maybe_unused__]]const RenderMode& renderMode, bool fur) const {
     switch(_blend_mode) {
         case BlendMode::None:
             glDisable(GL_BLEND);

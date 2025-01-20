@@ -20,9 +20,11 @@ layout(binding = 0) uniform Data {
 };
 
 uniform mat4 model;
+uniform float density;
+
 
 void main() {
-    const vec4 position = model * vec4(in_pos, 1.0);
+    const vec4 position = model * vec4(in_pos + vec3(0.f, 0.f, 0.f), 1.0);
 
     out_normal = normalize(mat3(model) * in_normal);
     out_tangent = normalize(mat3(model) * in_tangent_bitangent_sign.xyz);
