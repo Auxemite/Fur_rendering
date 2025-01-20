@@ -14,8 +14,10 @@ layout(location = 5) in vec3 in_bitangent;
 
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
+
 uniform float density;
 uniform float scale;
+uniform float thickness;
 
 const vec3 ambient = vec3(0.0);
 
@@ -34,7 +36,7 @@ void main() {
 //#else
 //    const vec3 normal = in_normal;
 //#endif
-    vec2 newUv = in_uv * 500.0;
+    vec2 newUv = in_uv * thickness;
     vec2 testUv = fract(newUv) * 2.0 - 1.0;
     ivec2 seed = ivec2(newUv);
     float random = rand(seed); // random value [0, 1]

@@ -163,6 +163,17 @@ void gui(ImGuiRenderer& imgui) {
         }
         ImGui::Separator();
 
+        if(ImGui::BeginMenu("Fur options")) {
+            ImGui::DragFloat("Scale Modifier", &scale_modifier, 0.0005f, 0.001f, 0.1f, "%.3f", ImGuiSliderFlags_Logarithmic);
+            ImGui::DragFloat("Base Density", &density_base, 0.01f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
+            ImGui::DragFloat("Density Modifier", &density_modifier, 0.01f, 1.0f, 3.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+            ImGui::DragFloat("Thickness", &thickness, 5.0f, 10.0f, 1000.0f, "%1.f", ImGuiSliderFlags_Logarithmic);
+            if(ImGui::Button("Reset")) {
+                exposure = 1.0f;
+            }
+            ImGui::EndMenu();
+        }
+
         if(ImGui::MenuItem("GPU Profiler")) {
             open_gpu_profiler = true;
         }
