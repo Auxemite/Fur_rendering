@@ -11,6 +11,12 @@
 
 namespace OM3D {
 
+    inline float scale_base = 1.0f;
+    inline float scale_modifier = 0.01f;
+    inline float density_base = 0.5f;
+    inline float density_modifier = 1.5f;
+    inline float thickness = 500.0f;
+
 class SceneObject {
 
     public:

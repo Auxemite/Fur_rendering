@@ -40,14 +40,15 @@ void SceneObject::render(const RenderMode& renderMode, bool fur) const {
     if (fur) {
         int nb_shell = 32;
         glm::mat4 transform = _transform;
-        float scale = 1.0f;
-        float density = 0.5f;
+        float scale = scale_base;
+        float density = density_base;
         for (int i = 0; i < nb_shell; ++i) {
-            scale += 0.01f;
-            density /= 1.5;
+            scale += scale_modifier;
+            density /= density_modifier;
             _material->set_fur_uniform(HASH("model"), transform);
             _material->set_fur_uniform(HASH("density"), density);
             _material->set_fur_uniform(HASH("scale"), scale);
+            _material->set_fur_uniform(HASH("thickness"), thickness);
             _material->bind(renderMode, fur);
             _mesh->draw();
             transform = glm::scale(_transform, glm::vec3(scale));
