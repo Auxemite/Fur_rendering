@@ -15,7 +15,7 @@ enum RenderMode {
     Normals = 2,
     Depth = 3,
     GBuffer = 4,
-    Lit = 5,
+    Lit = 5
 };
 
 enum class BlendMode {
@@ -45,9 +45,13 @@ class Material {
         void set_uniform(Args&&... args) {
             _program->set_uniform(FWD(args)...);
         }
+        template<typename... Args>
+        void set_fur_uniform(Args&&... args) {
+            _program_fur->set_uniform(FWD(args)...);
+        }
 
 
-        void bind(const RenderMode& renderMode) const;
+        void bind(const RenderMode& renderMode, bool fur) const;
 
         static std::shared_ptr<Material> empty_material();
         static Material textured_material();
@@ -56,6 +60,7 @@ class Material {
 
     private:
         std::shared_ptr<Program> _program;
+        std::shared_ptr<Program> _program_fur;
         std::vector<std::pair<u32, std::shared_ptr<Texture>>> _textures;
 
         BlendMode _blend_mode = BlendMode::None;

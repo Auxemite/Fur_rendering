@@ -26,14 +26,34 @@ SceneObject::SceneObject(std::shared_ptr<StaticMesh> mesh, std::shared_ptr<Mater
         }
 }
 
-void SceneObject::render(const RenderMode& renderMode) const {
+void SceneObject::render(const RenderMode& renderMode, bool fur) const {
     if(!_material || !_mesh) {
         return;
     }
 
-    _material->set_uniform(HASH("model"), transform());
-    _material->bind(renderMode);
+    // Classic rendering
+    _material->set_uniform(HASH("model"), _transform);
+    _material->bind(renderMode, false);
     _mesh->draw();
+
+    // Fur rendering
+    if (fur) {
+        int nb_shell = 32;
+        glm::mat4 transform = _transform;
+        float scale = 1.0f;
+        float density = 0.5f;
+        for (int i = 0; i < nb_shell; ++i) {
+            scale += 0.01f;
+            density /= 1.5;
+            _material->set_fur_uniform(HASH("model"), transform);
+            _material->set_fur_uniform(HASH("density"), density);
+            _material->set_fur_uniform(HASH("scale"), scale);
+            _material->bind(renderMode, fur);
+            _mesh->draw();
+            transform = glm::scale(_transform, glm::vec3(scale));
+//        std::cout << "density: " << density << std::endl;
+        }
+    }
 }
 
 void SceneObject::set_transform(const glm::mat4& tr) {

@@ -332,6 +332,7 @@ struct RendererState {
             state.tone_mapped_texture = Texture(size, ImageFormat::RGBA8_UNORM);
 
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
+            state.main_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.lit_hdr_texture});
             state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
             state.lit_framebuffer = Framebuffer(nullptr, std::array{&state.lit_hdr_texture});
             state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
@@ -351,6 +352,7 @@ struct RendererState {
     Framebuffer test_framebuffer;
     Framebuffer tone_map_framebuffer;
     Framebuffer g_buffer_framebuffer;
+    Framebuffer main_framebuffer;
     Framebuffer lit_framebuffer;
 };
 
@@ -377,11 +379,12 @@ int main(int argc, char** argv) {
 
     ImGuiRenderer imgui(window);
 
-    scene = create_default_scene("bistro_lights.glb");
-//    scene = create_default_scene("forest.glb");
+//    scene = create_default_scene("bistro_lights.glb");
+    scene = create_default_scene("forest.glb");
 //    scene = create_default_scene("forest_huge.glb");
 //    scene = create_default_scene("cube.glb");
-    sphere_scene = create_default_scene("sphere.glb");
+    sphere_scene = create_default_scene("sphere2.glb");
+    scene->add_object(sphere_scene->objects()[0]);
     std::vector<PointLight> lights;
     {
         PointLight light;
@@ -447,7 +450,7 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("Zprepass");
 
                 renderer.depth_framebuffer.bind(true, false);
-                scene->render(RenderMode::GBuffer, i);
+                scene->render(RenderMode::GBuffer, i, false);
             }
 
             // Render the scene
@@ -455,47 +458,47 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("G Buffer pass");
 
                 renderer.g_buffer_framebuffer.bind(false, true);
-                scene->render(RenderMode::GBuffer, i);
+                scene->render(RenderMode::GBuffer, i, false);
+            }
+
+            {
+                PROFILE_GPU("Main pass");
+
+                renderer.main_framebuffer.bind(false, true);
+                scene->render(render_mode, ++i, true);
+                i %= 60;
             }
 
 //            {
-//                PROFILE_GPU("Main pass");
+//                PROFILE_GPU("Lighting pass : Point lights");
 //
-//                renderer.main_framebuffer.bind(false, true);
-//                scene->render(render_mode, ++i);
-//                i %= 60;
+//                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
+//                TypedBuffer<shader::PointLight> light_buffer = scene->get_lights_frame_data();
+//                // print light radiuses
+//
+//                glFrontFace(GL_CW);
+//                renderer.lit_framebuffer.bind(false, true);
+//                buffer.bind(BufferUsage::Uniform, 0);
+//                light_buffer.bind(BufferUsage::Storage, 1);
+//                renderer.albedo_texture.bind(0);
+//                renderer.normal_texture.bind(1);
+//                renderer.depth_texture.bind(2);
+//                lights_program->bind();
+//                glDrawArrays(GL_TRIANGLES, 0, 3);
 //            }
-
-            {
-                PROFILE_GPU("Lighting pass : Point lights");
-
-                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
-                TypedBuffer<shader::PointLight> light_buffer = scene->get_lights_frame_data();
-                // print light radiuses
-
-                glFrontFace(GL_CW);
-                renderer.lit_framebuffer.bind(false, true);
-                buffer.bind(BufferUsage::Uniform, 0);
-                light_buffer.bind(BufferUsage::Storage, 1);
-                renderer.albedo_texture.bind(0);
-                renderer.normal_texture.bind(1);
-                renderer.depth_texture.bind(2);
-                lights_program->bind();
-                glDrawArrays(GL_TRIANGLES, 0, 3);
-            }
-            {
-                PROFILE_GPU("Lighting pass : Sun");
-
-                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
-                glFrontFace(GL_CW);
-                renderer.lit_framebuffer.bind(false, false);
-                buffer.bind(BufferUsage::Uniform, 0);
-                renderer.albedo_texture.bind(0);
-                renderer.normal_texture.bind(1);
-                renderer.lit_hdr_texture.bind(2);
-                sun_program->bind();
-                glDrawArrays(GL_TRIANGLES, 0, 3);
-            }
+//            {
+//                PROFILE_GPU("Lighting pass : Sun");
+//
+//                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
+//                glFrontFace(GL_CW);
+//                renderer.lit_framebuffer.bind(false, false);
+//                buffer.bind(BufferUsage::Uniform, 0);
+//                renderer.albedo_texture.bind(0);
+//                renderer.normal_texture.bind(1);
+//                renderer.lit_hdr_texture.bind(2);
+//                sun_program->bind();
+//                glDrawArrays(GL_TRIANGLES, 0, 3);
+//            }
 
             // Apply a tonemap in compute shader
             {
@@ -504,7 +507,7 @@ int main(int argc, char** argv) {
                 // Tone Mapping Triangle is Facing away from camera
                 glFrontFace(GL_CW);
 
-                renderer.tone_map_framebuffer.bind(false, true);
+                renderer.tone_map_framebuffer.bind(false, false);
                 if (render_mode != RenderMode::Default) {
                     debug_program->bind();
                     debug_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));

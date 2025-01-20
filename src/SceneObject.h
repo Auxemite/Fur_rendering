@@ -16,7 +16,7 @@ class SceneObject {
     public:
         SceneObject(std::shared_ptr<StaticMesh> mesh = nullptr, std::shared_ptr<Material> material = nullptr);
 
-        void render(const RenderMode& renderMode) const;
+        void render(const RenderMode& renderMode, bool fur) const;
 
         void set_transform(const glm::mat4& tr);
         void set_center(const glm::vec3& center);
