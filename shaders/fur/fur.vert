@@ -2,11 +2,19 @@
 
 #include "utils.glsl"
 
+#define INSTANCING 1
+
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_tangent_bitangent_sign;
 layout(location = 4) in vec3 in_color;
+#if INSTANCING == 1
+    layout(location = 5) in float shell_rank;
+    layout(location = 6) out float out_shell_rank;
+#else
+    uniform float shell_rank;
+#endif
 
 layout(location = 0) out vec3 out_normal;
 layout(location = 1) out vec2 out_uv;
@@ -23,7 +31,6 @@ uniform mat4 model;
 uniform float density;
 uniform float fur_length;
 uniform float fur_rigidity;
-uniform float shell_rank;
 
 void main() {
     out_normal = normalize(mat3(model) * in_normal);
@@ -31,7 +38,6 @@ void main() {
     out_bitangent = cross(out_tangent, out_normal) * (in_tangent_bitangent_sign.w > 0.0 ? 1.0 : -1.0);
 
     // Normal displacement of shell
-    // float fur_rigidity = 20.;
     vec3 offset = out_normal * fur_rigidity;
 
     // Gravity
@@ -45,6 +51,10 @@ void main() {
     out_uv = in_uv;
     out_color = in_color;
     out_position = position.xyz;
+
+    #if INSTANCING == 1
+        out_shell_rank = shell_rank;
+    #endif
 
     gl_Position = frame.camera.view_proj * position;
 }

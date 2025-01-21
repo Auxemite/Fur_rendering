@@ -26,6 +26,7 @@ class StaticMesh : NonCopyable {
         StaticMesh(const MeshData& data);
 
         void draw() const;
+        void draw_fur(std::vector<float> shells) const;
         size_t vertices_count();
         Vertex* vertices();
 

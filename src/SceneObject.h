@@ -11,13 +11,13 @@
 
 namespace OM3D {
 
-    inline int shell_number = 16;
+    inline int shell_number = 32;
     inline float scale_base = 1.0f;
-    inline float density = 100.f;
-    inline float rigidity = 10.f;
+    inline float density = 325.f;
+    inline float rigidity = 25.f;
     inline float base_thickness = 1.5f; // [0. - 1.5]
-    inline float tip_thickness = .2f; // [0. - 1.5]
-    inline float fur_length = 5.f;
+    inline float tip_thickness = .05f; // [0. - 1.5]
+    inline float fur_length = 3.75f;
 
 class SceneObject {
 
