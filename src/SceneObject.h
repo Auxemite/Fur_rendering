@@ -11,6 +11,7 @@
 
 namespace OM3D {
 
+    inline int shell_number = 16;
     inline float scale_base = 1.0f;
     inline float density = 100.f;
     inline float rigidity = 10.f;

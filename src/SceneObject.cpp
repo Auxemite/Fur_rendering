@@ -38,7 +38,7 @@ void SceneObject::render(const RenderMode& renderMode, bool fur) const {
 
     // Fur rendering
     if (fur) {
-        u32 nb_shell = 64;
+        u32 nb_shell = u32(shell_number);
         glm::mat4 transform = _transform;
         for (u32 i = 0; i < nb_shell; ++i)
         {

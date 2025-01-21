@@ -165,6 +165,7 @@ void gui(ImGuiRenderer& imgui) {
 
         if(ImGui::BeginMenu("Fur options")) {
             // ImGui::DragFloat("Scale Modifier", &scale_modifier, 0.0005f, 0.001f, 0.1f, "%.3f", ImGuiSliderFlags_Logarithmic);
+            ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200); 
             ImGui::DragFloat("Hair Density", &density, 1.f, 1.0f, 800.0f, "%.1f");
             ImGui::DragFloat("Hair Rigidity", &rigidity, 0.1f, 0.1f, 100.0f, "%.1f");
             ImGui::DragFloat("Hair Length", &fur_length, .1f, 0.5f, 50.f, "%.2f", ImGuiSliderFlags_None);
