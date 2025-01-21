@@ -38,21 +38,19 @@ void SceneObject::render(const RenderMode& renderMode, bool fur) const {
 
     // Fur rendering
     if (fur) {
-        int nb_shell = 32;
+        u32 nb_shell = 64;
         glm::mat4 transform = _transform;
-        float scale = scale_base;
-        float density = density_base;
-        for (int i = 0; i < nb_shell; ++i) {
-            scale += scale_modifier;
-            density /= density_modifier;
+        for (u32 i = 0; i < nb_shell; ++i)
+        {
             _material->set_fur_uniform(HASH("model"), transform);
             _material->set_fur_uniform(HASH("density"), density);
-            _material->set_fur_uniform(HASH("scale"), scale);
-            _material->set_fur_uniform(HASH("thickness"), thickness);
+            _material->set_fur_uniform(HASH("fur_rigidity"), rigidity);
+            _material->set_fur_uniform(HASH("fur_length"), fur_length);
+            _material->set_fur_uniform(HASH("base_thickness"), base_thickness);
+            _material->set_fur_uniform(HASH("tip_thickness"), tip_thickness);
+            _material->set_fur_uniform(HASH("shell_rank"), float(i) / float(nb_shell));
             _material->bind(renderMode, fur);
             _mesh->draw();
-            transform = glm::scale(_transform, glm::vec3(scale));
-//        std::cout << "density: " << density << std::endl;
         }
     }
 }

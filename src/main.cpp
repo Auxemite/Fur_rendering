@@ -164,10 +164,13 @@ void gui(ImGuiRenderer& imgui) {
         ImGui::Separator();
 
         if(ImGui::BeginMenu("Fur options")) {
-            ImGui::DragFloat("Scale Modifier", &scale_modifier, 0.0005f, 0.001f, 0.1f, "%.3f", ImGuiSliderFlags_Logarithmic);
-            ImGui::DragFloat("Base Density", &density_base, 0.01f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
-            ImGui::DragFloat("Density Modifier", &density_modifier, 0.01f, 1.0f, 3.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
-            ImGui::DragFloat("Thickness", &thickness, 5.0f, 10.0f, 1000.0f, "%1.f", ImGuiSliderFlags_Logarithmic);
+            // ImGui::DragFloat("Scale Modifier", &scale_modifier, 0.0005f, 0.001f, 0.1f, "%.3f", ImGuiSliderFlags_Logarithmic);
+            ImGui::DragFloat("Hair Density", &density, 1.f, 1.0f, 800.0f, "%.1f");
+            ImGui::DragFloat("Hair Rigidity", &rigidity, 0.1f, 0.1f, 100.0f, "%.1f");
+            ImGui::DragFloat("Hair Length", &fur_length, .1f, 0.5f, 50.f, "%.2f", ImGuiSliderFlags_None);
+            // ImGui::DragFloat("Density Modifier", &density_modifier, 0.01f, 1.0f, 3.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+            ImGui::DragFloat("Base thickness", &base_thickness, .01f, 0.0f, 2.0f, "%.3f");
+            ImGui::DragFloat("Tip thickness", &tip_thickness, .01f, 0.0f, 2.0f, "%.3f");
             if(ImGui::Button("Reset")) {
                 exposure = 1.0f;
             }

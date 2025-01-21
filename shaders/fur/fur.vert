@@ -21,14 +21,26 @@ layout(binding = 0) uniform Data {
 
 uniform mat4 model;
 uniform float density;
-
+uniform float fur_length;
+uniform float fur_rigidity;
+uniform float shell_rank;
 
 void main() {
-    const vec4 position = model * vec4(in_pos + vec3(0.f, 0.f, 0.f), 1.0);
-
     out_normal = normalize(mat3(model) * in_normal);
     out_tangent = normalize(mat3(model) * in_tangent_bitangent_sign.xyz);
     out_bitangent = cross(out_tangent, out_normal) * (in_tangent_bitangent_sign.w > 0.0 ? 1.0 : -1.0);
+
+    // Normal displacement of shell
+    // float fur_rigidity = 20.;
+    vec3 offset = out_normal * fur_rigidity;
+
+    // Gravity
+    float dist = fur_length * shell_rank;
+    vec3 gravity = 0.5f * vec3(0., -9.81, 0.) * dist;
+
+    // Compute position
+    vec3 falloff = normalize(offset + gravity) * dist;
+    const vec4 position = model * vec4(in_pos, 1.0) + vec4(falloff, 0.);
 
     out_uv = in_uv;
     out_color = in_color;
