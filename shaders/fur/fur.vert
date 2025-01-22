@@ -14,6 +14,7 @@ layout(location = 2) out vec3 out_color;
 layout(location = 3) out vec3 out_position;
 layout(location = 4) out vec3 out_tangent;
 layout(location = 5) out vec3 out_bitangent;
+layout(location = 6 )out vec3 out_view_direction;
 
 layout(binding = 0) uniform Data {
     FrameData frame;
@@ -46,6 +47,7 @@ void main() {
     out_color = in_color;
     out_position = position.xyz;
 
+    out_view_direction = normalize(frame.camera.position - position.xyz);
     gl_Position = frame.camera.view_proj * position;
 }
 
