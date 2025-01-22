@@ -486,7 +486,7 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("Zprepass");
 
                 renderer.depth_framebuffer.bind(true, false);
-                scene->render(RenderMode::GBuffer, i, false);
+                scene->render(RenderMode::GBuffer, i, false, total_time);
             }
 
             // Render the scene
@@ -494,14 +494,14 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("G Buffer pass");
 
                 renderer.g_buffer_framebuffer.bind(false, true);
-                scene->render(RenderMode::GBuffer, i, false);
+                scene->render(RenderMode::GBuffer, i, false, total_time);
             }
 
             {
                 PROFILE_GPU("Main pass");
 
                 renderer.main_framebuffer.bind(false, true);
-                scene->render(render_mode, ++i, true);
+                scene->render(render_mode, ++i, true, total_time);
                 i %= 60;
             }
 

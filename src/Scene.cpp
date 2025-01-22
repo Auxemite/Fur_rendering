@@ -84,7 +84,7 @@ TypedBuffer<shader::PointLight> Scene::get_lights_frame_data() {
     return light_buffer;
 }
 
-void Scene::render(const RenderMode& renderMode, int rendered_nb, bool fur) const {
+void Scene::render(const RenderMode& renderMode, int rendered_nb, bool fur, float time) const {
     // Fill and bind frame data buffer
     TypedBuffer<shader::FrameData> buffer(nullptr, 1);
     {
@@ -118,7 +118,7 @@ void Scene::render(const RenderMode& renderMode, int rendered_nb, bool fur) cons
     {
         if(obj.is_visible(_camera))
         {
-            obj.render(renderMode, fur);
+            obj.render(renderMode, fur, time);
             count++;
         }
     }

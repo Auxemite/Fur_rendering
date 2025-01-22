@@ -19,20 +19,20 @@ namespace OM3D {
     inline float base_thickness = 1.5f; // [0. - 1.5]
     inline float tip_thickness = .05f; // [0. - 1.5]
     inline float fur_length = 3.75f;
-    inline float min_length = .1f; // [0. - 1.]
-    inline float max_length = .9f; // [0. - 1.]
+    inline float min_length = 0.f; // [0. - 1.]
+    inline float max_length = 1.f; // [0. - 1.]
 
     // Wind
     inline float wind_strength = 10.f;
-    inline float wind_alpha = 0.f;
-    inline float wind_beta = 0.f;
+    inline float wind_alpha = 0.f; // [-10. - 10.]
+    inline float wind_beta = 5.f; // // [0. - 10.]
 
 class SceneObject {
 
     public:
         SceneObject(std::shared_ptr<StaticMesh> mesh = nullptr, std::shared_ptr<Material> material = nullptr);
 
-        void render(const RenderMode& renderMode, bool fur) const;
+        void render(const RenderMode& renderMode, bool fur, float time) const;
 
         void set_transform(const glm::mat4& tr);
         void set_center(const glm::vec3& center);

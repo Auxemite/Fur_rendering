@@ -27,7 +27,7 @@ SceneObject::SceneObject(std::shared_ptr<StaticMesh> mesh, std::shared_ptr<Mater
         }
 }
 
-void SceneObject::render(const RenderMode& renderMode, bool fur) const {
+void SceneObject::render(const RenderMode& renderMode, bool fur, float time) const {
     if(!_material || !_mesh) {
         return;
     }
@@ -57,6 +57,7 @@ void SceneObject::render(const RenderMode& renderMode, bool fur) const {
         _material->set_fur_uniform(HASH("wind_strength"), wind_strength);
         _material->set_fur_uniform(HASH("wind_alpha"), PI * (wind_alpha / 10.f));
         _material->set_fur_uniform(HASH("wind_beta"), PI * (wind_beta / 10.f));
+        _material->set_fur_uniform(HASH("time"), time);
 
         // Create vector containing shells rank
         u32 nb_shell = u32(shell_number);

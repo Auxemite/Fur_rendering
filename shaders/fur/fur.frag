@@ -50,8 +50,7 @@ void main()
         
         if (length(uv_fract) <= thickness)
         {
-            out_color = vec4(vec3(0.5 + 0.5 * shell_rank), 1.0) * texture(in_texture, in_uv);
-            // out_color = texture(in_texture, in_uv);
+            out_color = vec4(vec3(0.5 + 0.5 * in_color.x), 1.0) * texture(in_texture, in_uv);
         }
         else
             discard;

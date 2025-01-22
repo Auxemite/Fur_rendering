@@ -38,6 +38,41 @@ uniform float fur_rigidity;
 uniform float wind_strength;
 uniform float wind_alpha;
 uniform float wind_beta;
+uniform float time;
+
+float rand(vec2 seed) {
+    uint n = uint(seed.x * 15731 + seed.y * 789221);
+    n = (n << 13) ^ n;
+    return 1.0 - float((n * (n * n * 15731u + 789221u) + 1376312589u & 0x7FFFFFFFu)) / 2147483648.0;
+}
+
+vec3 create_wind()
+{
+    float x = cos(wind_alpha);
+    float y = sin(wind_alpha);
+    float z = cos(wind_beta);
+
+    vec3 wind = normalize(vec3(x, z, y)) * wind_strength;
+
+    return wind;
+}
+
+vec3 create_turbulence(vec3 vec)
+{
+    vec3 vec_norm = normalize(vec);
+    vec3 up = cross(vec_norm, vec3(0., 1., 0.));
+    vec3 left = cross(vec_norm, up);
+    up = cross(vec_norm, left);
+
+    float theta = time + rand(in_pos.xy) + rand(in_uv);
+
+    float left_turb = sin(theta) + sin(3. * theta) * sin(5. * theta) - sin(7. * theta) * cos(2. * theta) / 14. - cos(4. * theta) / 4.;
+    left_turb *= .5f;
+
+    float up_turb = - left_turb;
+
+    return (up * 0. + left * left_turb) * pow(0.1 * wind_strength, 2.);
+}
 
 void main() {
     out_normal = normalize(mat3(model) * in_normal);
@@ -52,17 +87,17 @@ void main() {
     vec3 gravity = 0.5f * vec3(0., -9.81, 0.) * dist;
 
     // Wind
-    float x = cos(wind_alpha);
-    float y = sin(wind_alpha);
-    float z = cos(wind_beta);
-    vec3 wind = normalize(vec3(x, z, y)) * wind_strength;
+    vec3 wind = create_wind();
+    wind += create_turbulence(offset + gravity + wind);
 
     // Compute position
-    vec3 falloff = normalize(offset + gravity + wind) * dist;
+    vec3 falloff = normalize(vec3(offset + gravity + wind)) * dist;
+
     const vec4 position = model * vec4(in_pos, 1.0) + vec4(falloff, 0.);
 
     out_uv = in_uv;
     out_color = in_color;
+    out_color.x = abs(dot(out_normal, falloff));
     out_position = position.xyz;
 
     #if INSTANCING == 1
