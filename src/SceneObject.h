@@ -18,6 +18,10 @@ namespace OM3D {
     inline float base_thickness = 1.5f; // [0. - 1.5]
     inline float tip_thickness = .2f; // [0. - 1.5]
     inline float fur_length = 5.f;
+    inline float fur_lighting = 0.0f;
+    inline float roughness = 0.6f;
+    inline float metaless = 0.0f;
+    inline float ambient = 0.1f;
 
 class SceneObject {
 
@@ -28,6 +32,7 @@ class SceneObject {
 
         void set_transform(const glm::mat4& tr);
         void set_center(const glm::vec3& center);
+        void set_material(std::shared_ptr<Material> material);
         const glm::mat4& transform() const;
         bool is_visible(const Camera& camera) const;
         bool is_in_range(const glm::vec3& position, const float& radius) const;

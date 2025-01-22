@@ -95,8 +95,8 @@ std::shared_ptr<Material> Material::empty_material() {
     std::cout << "Creating empty material" << std::endl;
     if(!material) {
         material = std::make_shared<Material>();
-        material->_program = Program::from_files("lit.frag", "basic.vert");
-        material->_program_fur = Program::from_files("fur/fur.frag", "fur/fur.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+        material->_program = Program::from_files("lit.frag", "basic.vert", "");
+        material->_program_fur = Program::from_files("fur/fur.frag", "fur/fur.vert", "", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
         weak_material = material;
     }
     return material;
@@ -105,16 +105,16 @@ std::shared_ptr<Material> Material::empty_material() {
 Material Material::textured_material() {
     Material material;
     std::cout << "Creating texture material" << std::endl;
-    material._program = Program::from_files("lit.frag", "basic.vert", {"TEXTURED"});
-    material._program_fur = Program::from_files("fur/fur.frag", "fur/fur.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+    material._program = Program::from_files("g_buffer.frag", "basic.vert", "", {"TEXTURED"});
+    material._program_fur = Program::from_files("fur/fur.frag", "fur/fur.vert", "", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
     return material;
 }
 
 Material Material::textured_normal_mapped_material() {
     Material material;
     std::cout << "Creating normal mapped material" << std::endl;
-    material._program = Program::from_files("g_buffer.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
-    material._program_fur = Program::from_files("fur/fur.frag", "fur/fur.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+    material._program = Program::from_files("g_buffer.frag", "basic.vert", "", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+    material._program_fur = Program::from_files("fur/fur.frag", "fur/fur.vert", "", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
 //    material._program = Program::from_files("lit.frag", "basic.vert", std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
     return material;
 }

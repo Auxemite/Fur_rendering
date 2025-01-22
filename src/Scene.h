@@ -23,6 +23,7 @@ namespace OM3D {
 
         void add_object(SceneObject obj);
         void copy_object(int i, const glm::vec3& pos);
+        void delete_object(int i);
         void add_light(PointLight obj);
 
         Span<const SceneObject> objects() const;

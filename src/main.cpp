@@ -172,9 +172,11 @@ void gui(ImGuiRenderer& imgui) {
             // ImGui::DragFloat("Density Modifier", &density_modifier, 0.01f, 1.0f, 3.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
             ImGui::DragFloat("Base thickness", &base_thickness, .01f, 0.0f, 2.0f, "%.3f");
             ImGui::DragFloat("Tip thickness", &tip_thickness, .01f, 0.0f, 2.0f, "%.3f");
-            if(ImGui::Button("Reset")) {
-                exposure = 1.0f;
-            }
+            ImGui::Text("Lighting properties");
+            ImGui::DragFloat("Fur Lighting", &fur_lighting, 0.1f, 0.0f, 5.0f, "%.1f");
+            ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Ambient", &ambient, 0.01f, 0.0f, 1.0f, "%.2f");
             ImGui::EndMenu();
         }
 
@@ -395,11 +397,14 @@ int main(int argc, char** argv) {
     ImGuiRenderer imgui(window);
 
 //    scene = create_default_scene("bistro_lights.glb");
-    scene = create_default_scene("forest.glb");
+    scene = create_default_scene("cube.glb");
 //    scene = create_default_scene("forest_huge.glb");
-//    scene = create_default_scene("cube.glb");
-    sphere_scene = create_default_scene("sphere.glb");
-    scene->add_object(sphere_scene->objects()[0]);
+    sphere_scene = create_default_scene("sphere2.glb");
+    SceneObject sphere = sphere_scene->objects()[0];
+    Material material = Material::textured_normal_mapped_material();
+    sphere.set_material(std::make_shared<Material>(material));
+    scene->add_object(sphere);
+    scene->delete_object(0);
     std::vector<PointLight> lights;
     {
         PointLight light;
@@ -416,20 +421,20 @@ int main(int argc, char** argv) {
         lights.push_back(light);
     }
 
-    for (const auto & light : lights) {
-        const glm::vec3& pos = light.position();
-        sphere_scene->copy_object(0, pos);
-    }
+//    for (const auto & light : lights) {
+//        const glm::vec3& pos = light.position();
+//        sphere_scene->copy_object(0, pos);
+//    }
     // print infos of the scene objects
 //    for(const SceneObject& obj : sphere_scene->objects())
 //    {
 //        obj.print_info();
 //    }
 
-    auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
-    auto debug_program = Program::from_files("debug.frag", "screen.vert");
-    auto sun_program = Program::from_files("sun.frag", "screen.vert");
-    auto lights_program = Program::from_files("lights.frag", "screen.vert");
+    auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert", "");
+    auto debug_program = Program::from_files("debug.frag", "screen.vert", "");
+    auto sun_program = Program::from_files("sun.frag", "screen.vert", "");
+    auto lights_program = Program::from_files("lights.frag", "screen.vert", "");
     RendererState renderer;
 
     int i = 0;

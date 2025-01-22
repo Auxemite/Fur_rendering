@@ -12,6 +12,10 @@ void Scene::add_object(SceneObject obj) {
     _objects.emplace_back(std::move(obj));
 }
 
+void Scene::delete_object(int i) {
+    _objects.erase(_objects.begin() + i);
+}
+
 void Scene::copy_object(int i, const glm::vec3& pos) {
     SceneObject obj = _objects[i];
     obj.set_center(pos);

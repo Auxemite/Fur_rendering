@@ -22,7 +22,11 @@ uniform float shell_rank;
 uniform float base_thickness;
 uniform float tip_thickness;
 
-const vec3 ambient = vec3(0.0);
+uniform float fur_lighting;
+uniform float roughness;
+uniform float metaless;
+uniform float ambient;
+
 float pi = 3.14159265359;
 
 vec4 sRGBToLinear( in vec4 value ) {
@@ -125,13 +129,11 @@ void main()
         
         if (length(uv_fract) <= thickness)
         {
-            float roughness = 0.5;
-            float metaless = 0.0;
-            vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv);
+            vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv) * vec3(pow(0.5 + 0.5 * shell_rank, fur_lighting));
 //            out_color = vec4(vec3(0.5 + 0.5 * shell_rank), 1.0) * texture(in_texture, in_uv);
 //            out_color = texture(in_texture, in_uv);
 
-            vec3 albedo = sRGBToLinear(vec4(irradiance, 1.0)).rgb;
+            vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient), 1.0)).rgb;
             albedo = Aces(albedo); // HDR
             out_color = LinearTosRGB(vec4(albedo, 1.0));
         }

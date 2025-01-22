@@ -199,7 +199,7 @@ ImGuiRenderer::ImGuiRenderer(GLFWwindow* window) : _window(window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
-    _material.set_program(Program::from_files("imgui.frag", "imgui.vert"));
+    _material.set_program(Program::from_files("imgui.frag", "imgui.vert", ""));
     _material.set_depth_test_mode(DepthTestMode::None);
     _material.set_blend_mode(BlendMode::Alpha);
 

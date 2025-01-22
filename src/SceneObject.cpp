@@ -49,6 +49,13 @@ void SceneObject::render(const RenderMode& renderMode, bool fur) const {
             _material->set_fur_uniform(HASH("base_thickness"), base_thickness);
             _material->set_fur_uniform(HASH("tip_thickness"), tip_thickness);
             _material->set_fur_uniform(HASH("shell_rank"), float(i) / float(nb_shell));
+
+            // light properties
+            _material->set_fur_uniform(HASH("fur_lighting"), fur_lighting);
+            _material->set_fur_uniform(HASH("roughness"), roughness);
+            _material->set_fur_uniform(HASH("metaless"), metaless);
+            _material->set_fur_uniform(HASH("ambient"), ambient);
+
             _material->bind(renderMode, fur);
             _mesh->draw();
         }
@@ -61,6 +68,10 @@ void SceneObject::set_transform(const glm::mat4& tr) {
 
 void SceneObject::set_center(const glm::vec3& center) {
     _center = center;
+}
+
+void SceneObject::set_material(std::shared_ptr<Material> material) {
+    _material = std::move(material);
 }
 
 /*
