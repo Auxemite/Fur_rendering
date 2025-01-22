@@ -2,7 +2,7 @@
 
 #include "utils.glsl"
 
-#define INSTANCING 1
+#define INSTANCING 0
 
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
@@ -28,9 +28,14 @@ layout(binding = 0) uniform Data {
 };
 
 uniform mat4 model;
+
+// Fur
 uniform float density;
 uniform float fur_length;
 uniform float fur_rigidity;
+
+// Wind
+uniform float wind_strength;
 
 void main() {
     out_normal = normalize(mat3(model) * in_normal);
@@ -44,8 +49,11 @@ void main() {
     float dist = fur_length * shell_rank;
     vec3 gravity = 0.5f * vec3(0., -9.81, 0.) * dist;
 
+    // Wind
+    vec3 wind = vec3(1., 0., 0.) * wind_strength;
+
     // Compute position
-    vec3 falloff = normalize(offset + gravity) * dist;
+    vec3 falloff = normalize(offset + gravity + wind) * dist;
     const vec4 position = model * vec4(in_pos, 1.0) + vec4(falloff, 0.);
 
     out_uv = in_uv;

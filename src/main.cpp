@@ -21,6 +21,7 @@ using namespace OM3D;
 
 static RenderMode render_mode = RenderMode::Default;
 static float delta_time = 0.0f;
+static float total_time = 0.0f;
 static std::unique_ptr<Scene> scene;
 static std::unique_ptr<Scene> sphere_scene;
 static float exposure = 1.0;
@@ -55,6 +56,7 @@ void update_delta_time() {
     static double time = 0.0;
     const double new_time = program_time();
     delta_time = float(new_time - time);
+    total_time += delta_time;
     time = new_time;
 }
 
@@ -164,14 +166,32 @@ void gui(ImGuiRenderer& imgui) {
         ImGui::Separator();
 
         if(ImGui::BeginMenu("Fur options")) {
-            // ImGui::DragFloat("Scale Modifier", &scale_modifier, 0.0005f, 0.001f, 0.1f, "%.3f", ImGuiSliderFlags_Logarithmic);
             ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200); 
             ImGui::DragFloat("Hair Density", &density, 1.f, 1.0f, 800.0f, "%.1f");
             ImGui::DragFloat("Hair Rigidity", &rigidity, 0.1f, 0.1f, 100.0f, "%.1f");
             ImGui::DragFloat("Hair Length", &fur_length, .1f, 0.5f, 50.f, "%.2f", ImGuiSliderFlags_None);
-            // ImGui::DragFloat("Density Modifier", &density_modifier, 0.01f, 1.0f, 3.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
             ImGui::DragFloat("Base thickness", &base_thickness, .01f, 0.0f, 2.0f, "%.3f");
             ImGui::DragFloat("Tip thickness", &tip_thickness, .01f, 0.0f, 2.0f, "%.3f");
+            ImGui::DragFloat("Min Length", &min_length, .01f, 0.0f, 1.0f, "%.3f");
+            ImGui::DragFloat("Max Length", &max_length, .01f, 0.0f, 1.0f, "%.3f");
+            if(ImGui::Button("Reset")) {
+                shell_number = 32;
+                scale_base = 1.0f;
+                density = 325.f;
+                rigidity = 25.f;
+                base_thickness = 1.5f; // [0. - 1.5]
+                tip_thickness = .05f; // [0. - 1.5]
+                fur_length = 3.75f;
+                min_length = 0.f; // [0. - 1.]
+                max_length = 1.f; // [0. - 1.]
+
+            }
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("Wind options")) {
+            ImGui::DragFloat("Wind Strength", &wind_strength, .1f, -50.0f, 50.0f, "%.1f");
+            ImGui::DragFloat("Wind Direction", &wind_strength, .1f, -50.0f, 50.0f, "%.1f");
             if(ImGui::Button("Reset")) {
                 exposure = 1.0f;
             }

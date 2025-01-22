@@ -40,19 +40,27 @@ void SceneObject::render(const RenderMode& renderMode, bool fur) const {
     // Fur rendering
     if (fur && shell_number > 0)
     {
-        #define INSTANCING 1
+        #define INSTANCING 0
 
+        // Fur Uniforms
         _material->set_fur_uniform(HASH("model"), _transform);
         _material->set_fur_uniform(HASH("density"), density);
         _material->set_fur_uniform(HASH("fur_rigidity"), rigidity);
         _material->set_fur_uniform(HASH("fur_length"), fur_length);
         _material->set_fur_uniform(HASH("base_thickness"), base_thickness);
         _material->set_fur_uniform(HASH("tip_thickness"), tip_thickness);
+        _material->set_fur_uniform(HASH("min_length"), min_length);
+        _material->set_fur_uniform(HASH("max_length"), max_length);
 
-        u32 nb_shell = u32(shell_number);
+        // Wind Uniforms
+        _material->set_fur_uniform(HASH("wind_strength"), wind_strength);
+
+
         // Create vector containing shells rank
+        u32 nb_shell = u32(shell_number);
         std::vector<float> shells_rank;
         shells_rank.resize(nb_shell);
+
         for (u32 i = 0; i < nb_shell; ++i)
             shells_rank[i] = float(i) / float(nb_shell - 1);
 

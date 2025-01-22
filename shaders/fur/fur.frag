@@ -2,7 +2,7 @@
 
 #include "utils.glsl"
 
-#define INSTANCING 1
+#define INSTANCING 0
 
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_normal;
@@ -25,6 +25,8 @@ layout(binding = 1) uniform sampler2D in_normal_texture;
 uniform float density;
 uniform float base_thickness;
 uniform float tip_thickness;
+uniform float min_length;
+uniform float max_length;
 
 const vec3 ambient = vec3(0.0);
 
@@ -42,7 +44,7 @@ void main()
     float random = rand(ivec2(uv)); // random value [0, 1]
     float thickness =  base_thickness + (shell_rank / random) * (tip_thickness - base_thickness);
 
-    if (random > shell_rank)
+    if (random > shell_rank && random >= min_length && random <= max_length)
     {
         vec3 color = vec3(in_uv, 1.0);
         

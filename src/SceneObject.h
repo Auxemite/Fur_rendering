@@ -11,6 +11,7 @@
 
 namespace OM3D {
 
+    // Fur
     inline int shell_number = 32;
     inline float scale_base = 1.0f;
     inline float density = 325.f;
@@ -18,6 +19,11 @@ namespace OM3D {
     inline float base_thickness = 1.5f; // [0. - 1.5]
     inline float tip_thickness = .05f; // [0. - 1.5]
     inline float fur_length = 3.75f;
+    inline float min_length = .1f; // [0. - 1.]
+    inline float max_length = .9f; // [0. - 1.]
+
+    // Wind
+    inline float wind_strength = 10.f;
 
 class SceneObject {
 
