@@ -24,6 +24,8 @@ namespace OM3D {
 
     // Wind
     inline float wind_strength = 10.f;
+    inline float wind_alpha = 0.f;
+    inline float wind_beta = 0.f;
 
 class SceneObject {
 

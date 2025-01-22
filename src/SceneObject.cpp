@@ -53,8 +53,10 @@ void SceneObject::render(const RenderMode& renderMode, bool fur) const {
         _material->set_fur_uniform(HASH("max_length"), max_length);
 
         // Wind Uniforms
+        #define PI 3.14159f
         _material->set_fur_uniform(HASH("wind_strength"), wind_strength);
-
+        _material->set_fur_uniform(HASH("wind_alpha"), PI * (wind_alpha / 10.f));
+        _material->set_fur_uniform(HASH("wind_beta"), PI * (wind_beta / 10.f));
 
         // Create vector containing shells rank
         u32 nb_shell = u32(shell_number);

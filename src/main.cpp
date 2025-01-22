@@ -191,7 +191,8 @@ void gui(ImGuiRenderer& imgui) {
 
         if(ImGui::BeginMenu("Wind options")) {
             ImGui::DragFloat("Wind Strength", &wind_strength, .1f, -50.0f, 50.0f, "%.1f");
-            ImGui::DragFloat("Wind Direction", &wind_strength, .1f, -50.0f, 50.0f, "%.1f");
+            ImGui::DragFloat("Wind Direction (xy)", &wind_alpha, .01f, -10.f, 10.f, "%.2f");
+            ImGui::DragFloat("Wind Direction (z)", &wind_beta, .01f, 0.f, 10.f, "%.2f");
             if(ImGui::Button("Reset")) {
                 exposure = 1.0f;
             }

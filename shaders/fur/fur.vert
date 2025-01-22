@@ -36,6 +36,8 @@ uniform float fur_rigidity;
 
 // Wind
 uniform float wind_strength;
+uniform float wind_alpha;
+uniform float wind_beta;
 
 void main() {
     out_normal = normalize(mat3(model) * in_normal);
@@ -50,7 +52,10 @@ void main() {
     vec3 gravity = 0.5f * vec3(0., -9.81, 0.) * dist;
 
     // Wind
-    vec3 wind = vec3(1., 0., 0.) * wind_strength;
+    float x = cos(wind_alpha);
+    float y = sin(wind_alpha);
+    float z = cos(wind_beta);
+    vec3 wind = normalize(vec3(x, z, y)) * wind_strength;
 
     // Compute position
     vec3 falloff = normalize(offset + gravity + wind) * dist;
