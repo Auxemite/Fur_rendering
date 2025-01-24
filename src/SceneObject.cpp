@@ -27,18 +27,19 @@ SceneObject::SceneObject(std::shared_ptr<StaticMesh> mesh, std::shared_ptr<Mater
         }
 }
 
+
 void SceneObject::render(const RenderMode& renderMode, bool fur, float time) const {
     if(!_material || !_mesh) {
         return;
     }
 
-    // Classic rendering
-    _material->set_uniform(HASH("model"), _transform);
-    _material->bind(renderMode, false);
-    _mesh->draw();
+//    // Classic rendering
+//    _material->set_uniform(HASH("model"), _transform);
+//    _material->bind(renderMode, false);
+//    _mesh->draw();
 
     // Fur rendering
-    if (fur && shell_number > 0)
+    if (fur)
     {
         #define INSTANCING 0
 
@@ -51,6 +52,12 @@ void SceneObject::render(const RenderMode& renderMode, bool fur, float time) con
         _material->set_fur_uniform(HASH("tip_thickness"), tip_thickness);
         _material->set_fur_uniform(HASH("min_length"), min_length);
         _material->set_fur_uniform(HASH("max_length"), max_length);
+      
+       // light properties
+       _material->set_fur_uniform(HASH("fur_lighting"), fur_lighting);
+       _material->set_fur_uniform(HASH("roughness"), roughness);
+       _material->set_fur_uniform(HASH("metaless"), metaless);
+       _material->set_fur_uniform(HASH("ambient"), ambient);
 
         // Wind Uniforms
         #define PI 3.14159f
@@ -60,7 +67,7 @@ void SceneObject::render(const RenderMode& renderMode, bool fur, float time) con
         _material->set_fur_uniform(HASH("time"), time);
 
         // Create vector containing shells rank
-        u32 nb_shell = u32(shell_number);
+        u32 nb_shell = u32(shell_number + 1);
         std::vector<float> shells_rank;
         shells_rank.resize(nb_shell);
 
@@ -87,6 +94,14 @@ void SceneObject::set_transform(const glm::mat4& tr) {
 
 void SceneObject::set_center(const glm::vec3& center) {
     _center = center;
+}
+
+void SceneObject::set_material(std::shared_ptr<Material> material) {
+    _material = std::move(material);
+}
+
+glm::vec3 SceneObject::get_center() const {
+    return _center;
 }
 
 /*

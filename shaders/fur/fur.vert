@@ -11,7 +11,7 @@ layout(location = 3) in vec4 in_tangent_bitangent_sign;
 layout(location = 4) in vec3 in_color;
 #if INSTANCING == 1
     layout(location = 5) in float shell_rank;
-    layout(location = 6) out float out_shell_rank;
+    layout(location = 7) out float out_shell_rank;
 #else
     uniform float shell_rank;
 #endif
@@ -22,6 +22,7 @@ layout(location = 2) out vec3 out_color;
 layout(location = 3) out vec3 out_position;
 layout(location = 4) out vec3 out_tangent;
 layout(location = 5) out vec3 out_bitangent;
+layout(location = 6) out vec3 out_view_direction;
 
 layout(binding = 0) uniform Data {
     FrameData frame;
@@ -100,10 +101,11 @@ void main() {
     out_color.x = abs(dot(out_normal, falloff));
     out_position = position.xyz;
 
+    out_view_direction = normalize(frame.camera.position - position.xyz);
     #if INSTANCING == 1
         out_shell_rank = shell_rank;
     #endif
-
+    
     gl_Position = frame.camera.view_proj * position;
 }
 

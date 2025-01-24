@@ -12,16 +12,23 @@
 namespace OM3D {
 
     // Fur
-    inline int shell_number = 32;
+    inline int shell_number = 64;
     inline float scale_base = 1.0f;
     inline float density = 325.f;
     inline float rigidity = 25.f;
     inline float base_thickness = 1.5f; // [0. - 1.5]
-    inline float tip_thickness = .05f; // [0. - 1.5]
-    inline float fur_length = 3.75f;
+  
+    inline float tip_thickness = .2f; // [0. - 1.5]
+    inline float fur_length = 0.5f;
     inline float min_length = 0.f; // [0. - 1.]
     inline float max_length = 1.f; // [0. - 1.]
-
+  
+    // BRDF
+    inline float fur_lighting = 0.0f;
+    inline float roughness = 0.6f;
+    inline float metaless = 0.0f;
+    inline float ambient = 0.1f;
+  
     // Wind
     inline float wind_strength = 10.f;
     inline float wind_alpha = 0.f; // [-10. - 10.]
@@ -36,6 +43,8 @@ class SceneObject {
 
         void set_transform(const glm::mat4& tr);
         void set_center(const glm::vec3& center);
+        void set_material(std::shared_ptr<Material> material);
+        glm::vec3 get_center() const;
         const glm::mat4& transform() const;
         bool is_visible(const Camera& camera) const;
         bool is_in_range(const glm::vec3& position, const float& radius) const;
