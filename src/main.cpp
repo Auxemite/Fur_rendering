@@ -22,7 +22,6 @@ using namespace OM3D;
 static RenderMode render_mode = RenderMode::Default;
 static float delta_time = 0.0f;
 static std::unique_ptr<Scene> scene;
-static std::unique_ptr<Scene> sphere_scene;
 static float exposure = 1.0;
 static std::vector<std::string> scene_files;
 
@@ -397,9 +396,10 @@ int main(int argc, char** argv) {
     ImGuiRenderer imgui(window);
 
 //    scene = create_default_scene("bistro_lights.glb");
+//    scene = create_default_scene("forest.glb");
     scene = create_default_scene("cube.glb");
 //    scene = create_default_scene("forest_huge.glb");
-    sphere_scene = create_default_scene("sphere2.glb");
+    const std::unique_ptr<Scene> sphere_scene = create_default_scene("sphere2.glb");
     SceneObject sphere = sphere_scene->objects()[0];
     Material material = Material::textured_normal_mapped_material();
     sphere.set_material(std::make_shared<Material>(material));
@@ -572,4 +572,5 @@ int main(int argc, char** argv) {
     }
 
     scene = nullptr; // destroy scene and child OpenGL objects
+    return 0;
 }

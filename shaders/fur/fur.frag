@@ -106,7 +106,7 @@ vec3 brdf(vec3 normal, float roughness, float metaless, vec2 in_uv)
         float spec = G * D * ks / (4.0 * dot(normal, out_view_direction) * dot(normal, lightDir) + 1.0);
 
         //! diffuse
-        vec3 diffuse = (1.0 - ks) * (texture(in_texture, in_uv)).xyz * rdot(normal, lightDir) / pi;
+        vec3 diffuse = (1.0 - ks) * (texture(in_texture, in_uv)).xyz * vec3(1.0, 0.0, 0.0) * rdot(normal, lightDir) / pi;
         diffuse *= (1.0 - metaless);
 
         vec3 lightSample = lightcolor * lightintensity;
@@ -122,18 +122,27 @@ void main()
     ivec2 seed = ivec2(uv);
     float random = rand(ivec2(uv)); // random value [0, 1]
     float thickness =  base_thickness + (shell_rank / random) * (tip_thickness - base_thickness);
+    float fur_deepness = pow(0.5 + 0.5 * shell_rank / thickness, fur_lighting);
 
-    if (random > shell_rank)
+    if (shell_rank == 0)
+    {
+        vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv) * fur_deepness;
+        out_color = texture(in_texture, in_uv);
+        vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient * fur_deepness), 1.0)).rgb;
+        albedo = Aces(albedo); // HDR
+        out_color = LinearTosRGB(vec4(albedo, 1.0));
+    }
+    else if (random > shell_rank)
     {
 //        vec3 color = vec3(in_uv, 1.0);
         
         if (length(uv_fract) <= thickness)
         {
-            vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv) * vec3(pow(0.5 + 0.5 * shell_rank, fur_lighting));
+            vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv) * fur_deepness;
 //            out_color = vec4(vec3(0.5 + 0.5 * shell_rank), 1.0) * texture(in_texture, in_uv);
 //            out_color = texture(in_texture, in_uv);
 
-            vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient), 1.0)).rgb;
+            vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient * fur_deepness), 1.0)).rgb;
             albedo = Aces(albedo); // HDR
             out_color = LinearTosRGB(vec4(albedo, 1.0));
         }

@@ -26,19 +26,20 @@ SceneObject::SceneObject(std::shared_ptr<StaticMesh> mesh, std::shared_ptr<Mater
         }
 }
 
-void SceneObject::render(const RenderMode& renderMode, bool fur) const {
+void SceneObject::render(const RenderMode& renderMode, bool fur, const float dist) const {
     if(!_material || !_mesh) {
         return;
     }
 
-    // Classic rendering
-    _material->set_uniform(HASH("model"), _transform);
-    _material->bind(renderMode, false);
-    _mesh->draw();
+//    // Classic rendering
+//    _material->set_uniform(HASH("model"), _transform);
+//    _material->bind(renderMode, false);
+//    _mesh->draw();
 
     // Fur rendering
     if (fur) {
-        u32 nb_shell = u32(shell_number);
+//        u32 nb_shell = u32(shell_number / (dist + 0.01f)) + 1; // +1 is for classic rendering
+        u32 nb_shell = u32(shell_number + 1);
         glm::mat4 transform = _transform;
         for (u32 i = 0; i < nb_shell; ++i)
         {
@@ -72,6 +73,10 @@ void SceneObject::set_center(const glm::vec3& center) {
 
 void SceneObject::set_material(std::shared_ptr<Material> material) {
     _material = std::move(material);
+}
+
+glm::vec3 SceneObject::get_center() const {
+    return _center;
 }
 
 /*
