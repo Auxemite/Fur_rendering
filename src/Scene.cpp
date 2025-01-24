@@ -125,7 +125,7 @@ void Scene::render(const RenderMode& renderMode, int rendered_nb, bool fur, floa
         if(obj.is_visible(_camera))
         {
             // distance from camera
-            const float distance = glm::length(_camera.position() - obj.get_center());
+            // const float distance = glm::length(_camera.position() - obj.get_center());
             obj.render(renderMode, fur, time);
             count++;
         }

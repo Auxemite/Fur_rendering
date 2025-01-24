@@ -33,10 +33,13 @@ void SceneObject::render(const RenderMode& renderMode, bool fur, float time) con
         return;
     }
 
-//    // Classic rendering
-//    _material->set_uniform(HASH("model"), _transform);
-//    _material->bind(renderMode, false);
-//    _mesh->draw();
+    // Classic rendering
+    if (!fur)
+    {
+        _material->set_uniform(HASH("model"), _transform);
+        _material->bind(renderMode, false);
+        _mesh->draw();
+    }
 
     // Fur rendering
     if (fur)
@@ -44,14 +47,23 @@ void SceneObject::render(const RenderMode& renderMode, bool fur, float time) con
         #define INSTANCING 0
 
         // Fur Uniforms
+        _material->set_fur_uniform(HASH("time"), time);
         _material->set_fur_uniform(HASH("model"), _transform);
-        _material->set_fur_uniform(HASH("density"), density);
-        _material->set_fur_uniform(HASH("fur_rigidity"), rigidity);
+        _material->set_fur_uniform(HASH("fur_density"), fur_density);
         _material->set_fur_uniform(HASH("fur_length"), fur_length);
         _material->set_fur_uniform(HASH("base_thickness"), base_thickness);
         _material->set_fur_uniform(HASH("tip_thickness"), tip_thickness);
-        _material->set_fur_uniform(HASH("min_length"), min_length);
-        _material->set_fur_uniform(HASH("max_length"), max_length);
+
+        // Hair constraints uniform
+        _material->set_fur_uniform(HASH("hair_rigidity"), hair_rigidity);
+        _material->set_fur_uniform(HASH("hair_min_length"), hair_min_length);
+        _material->set_fur_uniform(HASH("hair_max_length"), hair_max_length);
+        
+        _material->set_fur_uniform(HASH("hair_fuzziness"), hair_fuzziness);
+        _material->set_fur_uniform(HASH("hair_fuzz_seed"), hair_fuzz_seed);
+
+        _material->set_fur_uniform(HASH("hair_curliness"), hair_curliness);
+        _material->set_fur_uniform(HASH("hair_curl_size"), hair_curl_size);
       
        // light properties
        _material->set_fur_uniform(HASH("fur_lighting"), fur_lighting);
@@ -64,7 +76,7 @@ void SceneObject::render(const RenderMode& renderMode, bool fur, float time) con
         _material->set_fur_uniform(HASH("wind_strength"), wind_strength);
         _material->set_fur_uniform(HASH("wind_alpha"), PI * (wind_alpha / 10.f));
         _material->set_fur_uniform(HASH("wind_beta"), PI * (wind_beta / 10.f));
-        _material->set_fur_uniform(HASH("time"), time);
+        _material->set_fur_uniform(HASH("turbulence_strength"), turbulence_strength);
 
         // Create vector containing shells rank
         u32 nb_shell = u32(shell_number + 1);
