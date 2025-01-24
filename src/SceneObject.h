@@ -11,24 +11,35 @@
 
 namespace OM3D {
 
+    // Fur
     inline int shell_number = 64;
     inline float scale_base = 1.0f;
-    inline float density = 100.f;
-    inline float rigidity = 10.f;
+    inline float density = 325.f;
+    inline float rigidity = 25.f;
     inline float base_thickness = 1.5f; // [0. - 1.5]
+  
     inline float tip_thickness = .2f; // [0. - 1.5]
     inline float fur_length = 0.5f;
+    inline float min_length = 0.f; // [0. - 1.]
+    inline float max_length = 1.f; // [0. - 1.]
+  
+    // BRDF
     inline float fur_lighting = 0.0f;
     inline float roughness = 0.6f;
     inline float metaless = 0.0f;
     inline float ambient = 0.1f;
+  
+    // Wind
+    inline float wind_strength = 10.f;
+    inline float wind_alpha = 0.f; // [-10. - 10.]
+    inline float wind_beta = 5.f; // // [0. - 10.]
 
 class SceneObject {
 
     public:
         SceneObject(std::shared_ptr<StaticMesh> mesh = nullptr, std::shared_ptr<Material> material = nullptr);
 
-        void render(const RenderMode& renderMode, bool fur, const float dist) const;
+        void render(const RenderMode& renderMode, bool fur, float time) const;
 
         void set_transform(const glm::mat4& tr);
         void set_center(const glm::vec3& center);
