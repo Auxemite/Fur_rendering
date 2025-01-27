@@ -167,7 +167,7 @@ void gui(ImGuiRenderer& imgui) {
         if(ImGui::BeginMenu("Fur options")) {
             ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200); 
             ImGui::DragFloat("Fur Density", &fur_density, 1.f, 1.0f, 800.0f, "%.1f");
-            ImGui::DragFloat("Hair Rigidity", &hair_rigidity, 0.1f, 0.1f, 100.0f, "%.1f");
+            ImGui::DragFloat("Hair Rigidity", &hair_rigidity, 1.f, 0.1f, 100.0f, "%.1f");
             ImGui::DragFloat("Hair Length", &fur_length, .1f, 0.5f, 50.f, "%.2f", ImGuiSliderFlags_None);
             ImGui::DragFloat("Base thickness", &base_thickness, .01f, 0.0f, 2.0f, "%.3f");
             ImGui::DragFloat("Tip thickness", &tip_thickness, .01f, 0.0f, 2.0f, "%.3f");
@@ -188,7 +188,7 @@ void gui(ImGuiRenderer& imgui) {
                 hair_rigidity = 25.f;
                 base_thickness = 1.5f; // [0. - 1.5]
                 tip_thickness = .05f; // [0. - 1.5]
-                fur_length = 3.75f;
+                fur_length = 1.f;
                 hair_min_length = 0.f; // [0. - 1.]
                 hair_max_length = 1.f; // [0. - 1.]
                 hair_fuzziness = 2.f; // [0. - 10.]
@@ -208,7 +208,7 @@ void gui(ImGuiRenderer& imgui) {
                 wind_strength = 10.f;
                 wind_alpha = 0.f; // [-10. - 10.]
                 wind_beta = 5.f; // // [0. - 10.]
-                turbulence_strength = 5.f; // // [0. - 10.]
+                turbulence_strength = 2.f; // // [0. - 10.]
             }
             ImGui::EndMenu();
         }
@@ -431,14 +431,15 @@ int main(int argc, char** argv) {
 
 //    scene = create_default_scene("bistro_lights.glb");
 //    scene = create_default_scene("forest.glb");
-    scene = create_default_scene("cube.glb");
-//    scene = create_default_scene("forest_huge.glb");
-    const std::unique_ptr<Scene> sphere_scene = create_default_scene("sphere2.glb");
-    SceneObject sphere = sphere_scene->objects()[0];
-    Material material = Material::textured_normal_mapped_material();
-    sphere.set_material(std::make_shared<Material>(material));
-    scene->add_object(sphere);
-    scene->delete_object(0);
+//   scene = create_default_scene("cube.glb");
+   scene = create_default_scene("rock.glb");
+    // const std::unique_ptr<Scene> sphere_scene = create_default_scene("sphere.glb");
+    // SceneObject sphere = sphere_scene->objects()[0];
+    // Material material = Material::textured_normal_mapped_material();
+    // sphere.set_material(std::make_shared<Material>(material));
+    // scene->add_object(sphere);
+    // scene->delete_object(0);
+    
     std::vector<PointLight> lights;
     {
         PointLight light;

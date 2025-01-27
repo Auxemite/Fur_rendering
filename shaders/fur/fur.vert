@@ -71,7 +71,7 @@ vec3 add_fuzz(vec3 vec)
     float up_fuzz = cos(theta) + sin(3. * theta) * sin(7. * theta) - sin(3. * theta) * cos(5. * theta) - cos(3. * theta) / 2.;
     up_fuzz *= 0.5f;
 
-    vec3 fuzzed_vec = vec_norm + (up * up_fuzz + left * left_fuzz) * shell_rank * fur_length * hair_fuzziness;
+    vec3 fuzzed_vec = vec_norm + (up * up_fuzz + left * left_fuzz) * shell_rank * (hair_fuzziness / 10.);
 
     return normalize(fuzzed_vec);
 }
