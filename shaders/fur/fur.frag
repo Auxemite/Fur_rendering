@@ -2,7 +2,7 @@
 
 #include "utils.glsl"
 
-#define INSTANCING 0
+#define INSTANCING 1
 
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_normal;
@@ -15,9 +15,9 @@ layout(location = 4) in vec3 in_tangent;
 layout(location = 5) in vec3 in_bitangent;
 layout(location = 6) in vec3 out_view_direction;
 #if INSTANCING == 1
-    layout(location = 7) in float shell_rank;
+layout(location = 7) in float shell_rank;
 #else
-    uniform float shell_rank;
+uniform float shell_rank;
 #endif
 
 layout(binding = 0) uniform sampler2D in_texture;
@@ -33,6 +33,7 @@ uniform float fur_lighting;
 uniform float roughness;
 uniform float metaless;
 uniform float ambient;
+uniform float ambient_occlusion;
 
 float pi = 3.14159265359;
 
@@ -93,7 +94,7 @@ float fresnelSchlick(float dotVH, float f0)
     return f0 + (1.0 - f0) * pow(1.0 - dotVH, 5.0);
 }
 
-vec3 brdf(vec3 normal, float roughness, float metaless, vec2 in_uv)
+vec3 brdf(vec3 normal, float roughness, float metaless, vec2 in_uv, float random)
 {
     vec3 irradiance = vec3(0.0);
     vec3 lightposition = vec3(5.0, 5.0, 0.0);
@@ -113,7 +114,7 @@ vec3 brdf(vec3 normal, float roughness, float metaless, vec2 in_uv)
         float spec = G * D * ks / (4.0 * dot(normal, out_view_direction) * dot(normal, lightDir) + 1.0);
 
         //! diffuse
-        vec3 diffuse = (1.0 - ks) * (texture(in_texture, in_uv)).xyz * vec3(1.0, 0.0, 0.0) * rdot(normal, lightDir) / pi;
+        vec3 diffuse = (1.0 - ks) * (texture(in_texture, in_uv)).xyz * random * vec3(1.0, 0.0, 0.0) * rdot(normal, lightDir) / pi;
         diffuse *= (1.0 - metaless);
 
         vec3 lightSample = lightcolor * lightintensity;
@@ -126,28 +127,25 @@ void main()
 {
     vec2 uv = in_uv * density;
     vec2 uv_fract = fract(uv) * 2.0 - 1.0;
-    ivec2 seed = ivec2(uv);
-    float random = rand(ivec2(uv)); // random value [0, 1]
+    ivec2 seed = ivec2(uv.x, uv.y);
+    ivec2 seed2 = ivec2(uv.y, uv.x);
+    float random = rand(seed); // random value [0, 1]
+    float random2 = rand(seed2) * 0.5 + 0.5; // random value [0, 1]
     float thickness =  base_thickness + (shell_rank / random) * (tip_thickness - base_thickness);
     float fur_deepness = pow(0.5 + 0.5 * shell_rank / thickness, fur_lighting);
 
     if (shell_rank == 0)
     {
-        vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv) * fur_deepness;
-        out_color = texture(in_texture, in_uv);
+        vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv, 1.0) * fur_deepness;
         vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient * fur_deepness), 1.0)).rgb;
         albedo = Aces(albedo); // HDR
         out_color = LinearTosRGB(vec4(albedo, 1.0));
     }
     else if (random > shell_rank && random >= min_length && random <= max_length)
     {
-//        vec3 color = vec3(in_uv, 1.0);
-        
         if (length(uv_fract) <= thickness)
         {
-            vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv) * fur_deepness;
-//            out_color = vec4(vec3(0.5 + 0.5 * shell_rank), 1.0) * texture(in_texture, in_uv);
-//            out_color = texture(in_texture, in_uv);
+            vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv, random2) * fur_deepness * ambient_occlusion;
 
             vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient * fur_deepness), 1.0)).rgb;
             albedo = Aces(albedo); // HDR

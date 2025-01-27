@@ -4,6 +4,8 @@
 
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_normal;
+layout(location = 2) out vec4 out_tangent;
+layout(location = 3) out vec4 out_bitangent;
 
 layout(location = 0) in vec3 in_normal;
 layout(location = 1) in vec2 in_uv;
@@ -32,5 +34,7 @@ void main() {
     out_color *= texture(in_texture, in_uv);
 #endif
     out_normal = vec4(normal, 1.0);
+    out_tangent = vec4(in_tangent, 1.0);
+    out_bitangent = vec4(in_bitangent, 1.0);
 }
 

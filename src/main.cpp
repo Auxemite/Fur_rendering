@@ -160,11 +160,18 @@ void gui(ImGuiRenderer& imgui) {
             if(ImGui::MenuItem("Depth")) {
                 render_mode = RenderMode::Depth;
             }
+            if(ImGui::MenuItem("Tangent")) {
+                render_mode = RenderMode::Tangent;
+            }
+            if(ImGui::MenuItem("Bitangent")) {
+                render_mode = RenderMode::Bitangent;
+            }
             ImGui::EndMenu();
         }
         ImGui::Separator();
 
         if(ImGui::BeginMenu("Fur options")) {
+            ImGui::Checkbox("Kajiya-Kay", &kajyia_Kay);
             ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200); 
             ImGui::DragFloat("Hair Density", &density, 1.f, 1.0f, 800.0f, "%.1f");
             ImGui::DragFloat("Hair Rigidity", &rigidity, 0.1f, 0.1f, 100.0f, "%.1f");
@@ -176,6 +183,7 @@ void gui(ImGuiRenderer& imgui) {
             ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
             ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
             ImGui::DragFloat("Ambient", &ambient, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Ambient Occlusion", &ambient_occlusion, 0.01f, 0.0f, 1.0f, "%.2f");
             ImGui::DragFloat("Min Length", &min_length, .01f, 0.0f, 1.0f, "%.3f");
             ImGui::DragFloat("Max Length", &max_length, .01f, 0.0f, 1.0f, "%.3f");
             if(ImGui::Button("Reset")) {
@@ -368,12 +376,15 @@ struct RendererState {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
             state.albedo_texture = Texture(size, ImageFormat::RGBA8_sRGB);
             state.normal_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.tangent_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.bitangent_texture = Texture(size, ImageFormat::RGBA8_UNORM);
             state.lit_hdr_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
             state.tone_mapped_texture = Texture(size, ImageFormat::RGBA8_UNORM);
 
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
             state.main_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.lit_hdr_texture});
-            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
+//            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
+            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture, &state.tangent_texture, &state.bitangent_texture});
             state.lit_framebuffer = Framebuffer(nullptr, std::array{&state.lit_hdr_texture});
             state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
         }
@@ -386,6 +397,8 @@ struct RendererState {
     Texture lit_hdr_texture;
     Texture albedo_texture;
     Texture normal_texture;
+    Texture tangent_texture;
+    Texture bitangent_texture;
     Texture tone_mapped_texture;
 
     Framebuffer depth_framebuffer;
@@ -423,12 +436,14 @@ int main(int argc, char** argv) {
 //    scene = create_default_scene("forest.glb");
     scene = create_default_scene("cube.glb");
 //    scene = create_default_scene("forest_huge.glb");
+
     const std::unique_ptr<Scene> sphere_scene = create_default_scene("sphere2.glb");
     SceneObject sphere = sphere_scene->objects()[0];
     Material material = Material::textured_normal_mapped_material();
     sphere.set_material(std::make_shared<Material>(material));
     scene->add_object(sphere);
     scene->delete_object(0);
+
     std::vector<PointLight> lights;
     {
         PointLight light;
@@ -563,6 +578,14 @@ int main(int argc, char** argv) {
 
                         case RenderMode::Depth:
                             renderer.depth_texture.bind(0);
+                            break;
+
+                        case RenderMode::Tangent:
+                            renderer.tangent_texture.bind(0);
+                            break;
+
+                        case RenderMode::Bitangent:
+                            renderer.bitangent_texture.bind(0);
                             break;
 
                         default:

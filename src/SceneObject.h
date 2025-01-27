@@ -28,6 +28,7 @@ namespace OM3D {
     inline float roughness = 0.6f;
     inline float metaless = 0.0f;
     inline float ambient = 0.1f;
+    inline float ambient_occlusion = 1.0f;
   
     // Wind
     inline float wind_strength = 10.f;

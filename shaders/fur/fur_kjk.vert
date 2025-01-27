@@ -10,10 +10,10 @@ layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_tangent_bitangent_sign;
 layout(location = 4) in vec3 in_color;
 #if INSTANCING == 1
-layout(location = 5) in float shell_rank;
-layout(location = 7) out float out_shell_rank;
+    layout(location = 5) in float shell_rank;
+    layout(location = 7) out float out_shell_rank;
 #else
-uniform float shell_rank;
+    uniform float shell_rank;
 #endif
 
 layout(location = 0) out vec3 out_normal;
@@ -77,8 +77,11 @@ vec3 create_turbulence(vec3 vec)
 
 void main() {
     out_normal = normalize(mat3(model) * in_normal);
-    out_tangent = normalize(mat3(model) * in_tangent_bitangent_sign.xyz);
-    out_bitangent = cross(out_tangent, out_normal) * (in_tangent_bitangent_sign.w > 0.0 ? 1.0 : -1.0);
+//    out_tangent = normalize(mat3(model) * in_tangent_bitangent_sign.xyz);
+//    out_bitangent = cross(out_tangent, out_normal) * (in_tangent_bitangent_sign.w > 0.0 ? 1.0 : -1.0);
+    vec3 up = vec3(0.0, 1.0, 0.0);
+    out_tangent = normalize(mat3(model) * cross(up, in_normal));
+    out_bitangent = normalize(cross(out_tangent, out_normal));
 
     // Normal displacement of shell
     vec3 offset = out_normal * fur_rigidity;
@@ -103,9 +106,9 @@ void main() {
 
     out_view_direction = normalize(frame.camera.position - position.xyz);
     #if INSTANCING == 1
-    out_shell_rank = shell_rank;
+        out_shell_rank = shell_rank;
     #endif
-
+    
     gl_Position = frame.camera.view_proj * position;
 }
 
