@@ -25,8 +25,11 @@ void main() {
     const vec4 position = model * vec4(in_pos, 1.0);
 
     out_normal = normalize(mat3(model) * in_normal);
-    out_tangent = normalize(mat3(model) * in_tangent_bitangent_sign.xyz);
-    out_bitangent = cross(out_tangent, out_normal) * (in_tangent_bitangent_sign.w > 0.0 ? 1.0 : -1.0);
+    vec3 up = vec3(0.0, 1.0, 0.0);
+    out_tangent = normalize(mat3(model) * cross(up, in_normal));
+    out_bitangent = normalize(cross(out_tangent, out_normal));
+//    out_tangent = normalize(mat3(model) * in_tangent_bitangent_sign.xyz);
+//    out_bitangent = cross(out_tangent, out_normal) * (in_tangent_bitangent_sign.w > 0.0 ? 1.0 : -1.0);
 
     out_uv = in_uv;
     out_color = in_color;

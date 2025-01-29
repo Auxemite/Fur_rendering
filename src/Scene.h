@@ -19,7 +19,7 @@ namespace OM3D {
 
         TypedBuffer<shader::FrameData> get_sun_frame_data();
         TypedBuffer<shader::PointLight> get_lights_frame_data();
-        void render(const RenderMode& renderMode, int rendered_nb, bool fur, float time) const;
+        void render(const RenderMode& renderMode, int rendered_nb, bool active_fur, float time) const;
 
         void add_object(SceneObject obj);
         void copy_object(int i, const glm::vec3& pos);

@@ -2,7 +2,7 @@
 
 #include "utils.glsl"
 
-#define INSTANCING 0
+#define INSTANCING 1
 
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
@@ -10,10 +10,10 @@ layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_tangent_bitangent_sign;
 layout(location = 4) in vec3 in_color;
 #if INSTANCING == 1
-    layout(location = 5) in float shell_rank;
-    layout(location = 7) out float out_shell_rank;
+layout(location = 5) in float shell_rank;
+layout(location = 7) out float out_shell_rank;
 #else
-    uniform float shell_rank;
+uniform float shell_rank;
 #endif
 
 layout(location = 0) out vec3 out_normal;
@@ -171,9 +171,9 @@ void main() {
 
     out_view_direction = normalize(frame.camera.position - position.xyz);
     #if INSTANCING == 1
-        out_shell_rank = shell_rank;
+    out_shell_rank = shell_rank;
     #endif
-    
+
     gl_Position = frame.camera.view_proj * position;
 }
 

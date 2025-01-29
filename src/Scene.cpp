@@ -89,7 +89,7 @@ TypedBuffer<shader::PointLight> Scene::get_lights_frame_data() {
     return light_buffer;
 }
 
-void Scene::render(const RenderMode& renderMode, int rendered_nb, bool fur, float time) const {
+void Scene::render(const RenderMode& renderMode, int rendered_nb, bool active_fur, float time) const {
     // Fill and bind frame data buffer
     TypedBuffer<shader::FrameData> buffer(nullptr, 1);
     {
@@ -125,8 +125,8 @@ void Scene::render(const RenderMode& renderMode, int rendered_nb, bool fur, floa
         if(obj.is_visible(_camera))
         {
             // distance from camera
+            obj.render(renderMode, active_fur, time);
             // const float distance = glm::length(_camera.position() - obj.get_center());
-            obj.render(renderMode, fur, time);
             count++;
         }
     }

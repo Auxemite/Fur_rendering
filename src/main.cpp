@@ -160,6 +160,12 @@ void gui(ImGuiRenderer& imgui) {
             if(ImGui::MenuItem("Depth")) {
                 render_mode = RenderMode::Depth;
             }
+            if(ImGui::MenuItem("Tangent")) {
+                render_mode = RenderMode::Tangent;
+            }
+            if(ImGui::MenuItem("Bitangent")) {
+                render_mode = RenderMode::Bitangent;
+            }
             ImGui::EndMenu();
         }
         ImGui::Separator();
@@ -177,11 +183,7 @@ void gui(ImGuiRenderer& imgui) {
             ImGui::DragFloat("Hair Fuzz_seed", &hair_fuzz_seed, .01f, 0.0f, 10.f, "%.2f");
             ImGui::DragFloat("Hair Curliness", &hair_curliness, .01f, 0.0f, 50.f, "%.2f");
             ImGui::DragFloat("Hair Curl_size", &hair_curl_size, .01f, 0.0f, 1.0f, "%.3f");
-            ImGui::Text("Lighting properties");
-            ImGui::DragFloat("Fur Lighting", &fur_lighting, 0.1f, 0.0f, 5.0f, "%.1f");
-            ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
-            ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
-            ImGui::DragFloat("Ambient", &ambient, 0.01f, 0.0f, 1.0f, "%.2f");
+          
             if(ImGui::Button("Reset")) {
                 shell_number = 32;
                 fur_density = 325.f;
@@ -195,6 +197,23 @@ void gui(ImGuiRenderer& imgui) {
                 hair_fuzz_seed = 2.f; // [0. - 10.]
                 hair_curliness = 2.f; // [0. - 50.]
                 hair_curl_size = .2f; // [0. - 1.]
+            }
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("BRDF options")) {
+            ImGui::Checkbox("Kajiya-Kay", &kajyia_Kay);
+            ImGui::DragFloat("Fur Lighting", &fur_lighting, 0.1f, 0.0f, 5.0f, "%.1f");
+            ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Ambient", &ambient, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Ambient Occlusion", &ambient_occlusion, 0.01f, 0.0f, 1.0f, "%.2f");
+            if(ImGui::Button("Reset")) {
+                fur_lighting = 0.0f;
+                roughness = 0.6f;
+                metaless = 0.0f;
+                ambient = 0.0f;
+                ambient_occlusion = 1.0f;
             }
             ImGui::EndMenu();
         }
@@ -378,12 +397,15 @@ struct RendererState {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
             state.albedo_texture = Texture(size, ImageFormat::RGBA8_sRGB);
             state.normal_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.tangent_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.bitangent_texture = Texture(size, ImageFormat::RGBA8_UNORM);
             state.lit_hdr_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
             state.tone_mapped_texture = Texture(size, ImageFormat::RGBA8_UNORM);
 
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
             state.main_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.lit_hdr_texture});
-            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
+//            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
+            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture, &state.tangent_texture, &state.bitangent_texture});
             state.lit_framebuffer = Framebuffer(nullptr, std::array{&state.lit_hdr_texture});
             state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
         }
@@ -396,6 +418,8 @@ struct RendererState {
     Texture lit_hdr_texture;
     Texture albedo_texture;
     Texture normal_texture;
+    Texture tangent_texture;
+    Texture bitangent_texture;
     Texture tone_mapped_texture;
 
     Framebuffer depth_framebuffer;
@@ -431,14 +455,16 @@ int main(int argc, char** argv) {
 
 //    scene = create_default_scene("bistro_lights.glb");
 //    scene = create_default_scene("forest.glb");
-//   scene = create_default_scene("cube.glb");
-   scene = create_default_scene("rock.glb");
-    // const std::unique_ptr<Scene> sphere_scene = create_default_scene("sphere.glb");
-    // SceneObject sphere = sphere_scene->objects()[0];
-    // Material material = Material::textured_normal_mapped_material();
-    // sphere.set_material(std::make_shared<Material>(material));
-    // scene->add_object(sphere);
-    // scene->delete_object(0);
+    scene = create_default_scene("cube.glb");
+//    scene = create_default_scene("forest_huge.glb");
+
+    const std::unique_ptr<Scene> sphere_scene = create_default_scene("sphere2.glb");
+    SceneObject sphere = sphere_scene->objects()[0];
+    Material material = Material::textured_normal_mapped_material();
+    sphere.set_material(std::make_shared<Material>(material));
+    scene->add_object(sphere);
+    scene->delete_object(0);
+//    scene = create_default_scene("rock.glb");
     
     std::vector<PointLight> lights;
     {
@@ -574,6 +600,14 @@ int main(int argc, char** argv) {
 
                         case RenderMode::Depth:
                             renderer.depth_texture.bind(0);
+                            break;
+
+                        case RenderMode::Tangent:
+                            renderer.tangent_texture.bind(0);
+                            break;
+
+                        case RenderMode::Bitangent:
+                            renderer.bitangent_texture.bind(0);
                             break;
 
                         default:

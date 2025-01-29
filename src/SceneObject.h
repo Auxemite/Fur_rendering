@@ -33,7 +33,8 @@ namespace OM3D {
     inline float fur_lighting = 0.0f;
     inline float roughness = 0.6f;
     inline float metaless = 0.0f;
-    inline float ambient = 0.1f;
+    inline float ambient = 0.0f;
+    inline float ambient_occlusion = 1.0f;
   
     // Wind
     inline float wind_strength = 10.f;
@@ -49,7 +50,7 @@ class SceneObject {
     public:
         SceneObject(std::shared_ptr<StaticMesh> mesh = nullptr, std::shared_ptr<Material> material = nullptr);
 
-        void render(const RenderMode& renderMode, bool fur, float time) const;
+        void render(const RenderMode& renderMode, bool active_fur, float time) const;
 
         void set_transform(const glm::mat4& tr);
         void set_center(const glm::vec3& center);
@@ -68,6 +69,7 @@ class SceneObject {
         std::shared_ptr<Material> _material;
         glm::vec3 _center;
         float _radius;
+        bool fur = true;
 };
 
 }

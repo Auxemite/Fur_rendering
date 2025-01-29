@@ -28,23 +28,15 @@ SceneObject::SceneObject(std::shared_ptr<StaticMesh> mesh, std::shared_ptr<Mater
 }
 
 
-void SceneObject::render(const RenderMode& renderMode, bool fur, float time) const {
+void SceneObject::render(const RenderMode& renderMode, bool active_fur, float time) const {
     if(!_material || !_mesh) {
         return;
     }
 
-    // Classic rendering
-    if (!fur)
-    {
-        _material->set_uniform(HASH("model"), _transform);
-        _material->bind(renderMode, false);
-        _mesh->draw();
-    }
-
     // Fur rendering
-    if (fur)
+    if (active_fur && fur)
     {
-        #define INSTANCING 0
+        #define INSTANCING 1
 
         // Fur Uniforms
         _material->set_fur_uniform(HASH("time"), time);
@@ -70,6 +62,7 @@ void SceneObject::render(const RenderMode& renderMode, bool fur, float time) con
        _material->set_fur_uniform(HASH("roughness"), roughness);
        _material->set_fur_uniform(HASH("metaless"), metaless);
        _material->set_fur_uniform(HASH("ambient"), ambient);
+       _material->set_fur_uniform(HASH("ambient_occ"), ambient_occlusion);
 
         // Wind Uniforms
         #define PI 3.14159f
@@ -98,6 +91,12 @@ void SceneObject::render(const RenderMode& renderMode, bool fur, float time) con
             }
         #endif
     }
+    else {
+        // Classic rendering
+        _material->set_uniform(HASH("model"), _transform);
+        _material->bind(renderMode, false);
+        _mesh->draw();
+    }
 }
 
 void SceneObject::set_transform(const glm::mat4& tr) {
@@ -115,18 +114,6 @@ void SceneObject::set_material(std::shared_ptr<Material> material) {
 glm::vec3 SceneObject::get_center() const {
     return _center;
 }
-
-/*
-struct Frustum {
-    public:
-    glm::vec3 _near_normal;
-    // No far plane (zFar is +inf)
-    glm::vec3 _top_normal;
-    glm::vec3 _bottom_normal;
-    glm::vec3 _right_normal;
-    glm::vec3 _left_normal;
-};
-*/
 
 static bool in_plane(glm::vec3 plane_normal, const glm::vec3& origin, const glm::vec3 center, const float radius)
 {
