@@ -14,7 +14,7 @@ layout(location = 5) in vec3 in_bitangent[];
 layout(location = 6) in vec3 in_view_direction[];
 #if INSTANCING == 1
     layout(location = 7) in float shell_rank[];
-    layout(location = 7) out float out_shell_rank;
+    layout(location = 8) out float out_shell_rank;
 #else
     uniform float shell_rank;
 #endif
@@ -26,73 +26,61 @@ layout(location = 3) out vec3 out_position;
 layout(location = 4) out vec3 out_tangent;
 layout(location = 5) out vec3 out_bitangent;
 layout(location = 6) out vec3 out_view_direction;
+layout(location = 7) out int out_is_surface;
 
-float time()
-{
-    float speed = 0.3;
-    return speed * anim_time;
-}
+uniform mat4 model;
 
-vec3 get_normal_camera()
-{
-   vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
-   vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
-   return normalize(cross(a, b));
-}
-
-vec3 get_normal()
-{
-   vec3 a = cPosition[0] - cPosition[1];
-   vec3 b = cPosition[2] - cPosition[1];
-   return normalize(cross(b, a));
-}
-
-vec3 normal = get_normal();
+uniform float fur_length;
 
 vec3 get_tangent(vec3 pointa, vec3 pointb)
 {
     vec3 a = normalize(pointa - pointb);
-   return normalize(cross(normal, a));
+   return normalize(cross(in_normal[0], a));
 }
 
 vec3 col = vec3(.1f, .8f, 1.f);
 
-void emit_vertex(vec3 point)
+void emit_vertex(vec3 point, int i)
 {
-    gl_Position = gl_in[i].gl_Position;
+    // gl_Position = vec4(point, 1.);
     out_normal = in_normal[i];
     out_uv = in_uv[i];
-    out_color = in_color[i];
-    out_position = in_position[i];
+    out_color = vec3(1., 1., 1.);//in_color[i];
+    out_position = point;
     out_tangent = in_tangent[i];
     out_bitangent = in_bitangent[i];
     out_view_direction = in_view_direction[i];
+    out_is_surface = int(false);
     #if INSTANCING == 1
         out_shell_rank = shell_rank[i];
     #endif
     EmitVertex();
 }
 
-void emit_fin(vec3 pointa, vec3 pointb)
+void emit_fin(int ia, int ib)
 {
-    float dist = 0.02;
-    emit_vertex(pointa);
-    emit_vertex(pointa + dist * normal);
-    emit_vertex(pointb);
-    emit_vertex(pointb + dist * normal);
+    float dist = shell_rank * fur_length;
+    gl_Position = gl_in[ia].gl_Position;
+    emit_vertex(in_position[ia], ia);
+    gl_Position = gl_in[ia].gl_Position;
+    emit_vertex(in_position[ib], ib);
+    gl_Position = vec4(gl_in[ia].gl_Position.xyz + dist * in_normal[ia], gl_in[ia].gl_Position.w);
+    emit_vertex(in_position[ia] + dist * in_normal[ia], ia);
+    gl_Position = vec4(gl_in[ib].gl_Position.xyz + dist * in_normal[ib], gl_in[ib].gl_Position.w);
+    emit_vertex(in_position[ib] + dist * in_normal[ib], ib);
 
     EndPrimitive();
 }
 
 void emit_fins()
 {
-    for (int i = 0; i < SIZE; i++)
+    for (int i = 0; i < 3; i++)
     {
-        int next = (i + 1) % SIZE;
-        vec3 tang = get_tangent(cPosition[i], cPosition[next]);
+        int next = (i + 1) % 3;
+        vec3 tang = get_tangent(in_position[i], in_position[next]);
 
-        if (abs(dot(vec3(0., 0., 1.), tang)) > 0.9)
-            emit_fin(cPosition[i], cPosition[next]);
+        if (abs(dot(in_view_direction[0], tang)) > 0.6)
+            emit_fin(i, next);
     }
 }
 
@@ -106,6 +94,7 @@ void emit_base_vertex(int i)
     out_tangent = in_tangent[i];
     out_bitangent = in_bitangent[i];
     out_view_direction = in_view_direction[i];
+    out_is_surface = int(true);
     #if INSTANCING == 1
         out_shell_rank = shell_rank[i];
     #endif
@@ -115,7 +104,7 @@ void emit_base_vertex(int i)
 
 void emit_surface()
 {
-    for (int i = 0; i < SIZE; i++)
+    for (int i = 0; i < 3; i++)
         emit_base_vertex(i);
 
     EndPrimitive();
@@ -125,5 +114,5 @@ void emit_surface()
 void main()
 {
     emit_surface();
-    // emit_fins();
+    emit_fins();
 }

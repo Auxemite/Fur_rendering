@@ -2,8 +2,6 @@
 
 #include "utils.glsl"
 
-#define INSTANCING 1
-
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_normal;
 
@@ -13,12 +11,13 @@ layout(location = 2) in vec3 in_color;
 layout(location = 3) in vec3 in_position;
 layout(location = 4) in vec3 in_tangent;
 layout(location = 5) in vec3 in_bitangent;
-layout(location = 6) in vec3 out_view_direction;
+layout(location = 6) in vec3 in_view_direction;
 #if INSTANCING == 1
-layout(location = 7) in float shell_rank;
+    layout(location = 7) in float shell_rank;
 #else
-uniform float shell_rank;
+    uniform float shell_rank;
 #endif
+layout(location = 8) flat in int in_is_surface;
 
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
@@ -105,13 +104,13 @@ vec3 brdf(vec3 normal, float roughness, float metaless, vec2 in_uv, float random
 
         //! specular
         vec3 reflectDir = reflect(-lightDir, normal);
-        vec3 h = normalize(lightDir + out_view_direction);
+        vec3 h = normalize(lightDir + in_view_direction);
         float D = distributionGGX(normal, h, roughness);
         // float D = distributionGGX(normal, lightDir, roughness);
-        float G = geometrySchlickGGX(normal, lightDir, out_view_direction, roughness);
-        float ks = fresnelSchlick(rdot(h, out_view_direction), 0.04 + metaless);
+        float G = geometrySchlickGGX(normal, lightDir, in_view_direction, roughness);
+        float ks = fresnelSchlick(rdot(h, in_view_direction), 0.04 + metaless);
         // float ks = fresnelSchlick(rdot(reflectDir, ViewDirectionWS), 0.04);
-        float spec = G * D * ks / (4.0 * dot(normal, out_view_direction) * dot(normal, lightDir) + 1.0);
+        float spec = G * D * ks / (4.0 * dot(normal, in_view_direction) * dot(normal, lightDir) + 1.0);
 
         //! diffuse
         vec3 diffuse = (1.0 - ks) * (texture(in_texture, in_uv)).xyz * random * vec3(1.0, 0.0, 0.0) * rdot(normal, lightDir) / pi;
@@ -150,6 +149,8 @@ void main()
             vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient * fur_deepness), 1.0)).rgb;
             albedo = Aces(albedo); // HDR
             out_color = LinearTosRGB(vec4(albedo, 1.0));
+            // if (in_is_surface == int(false))
+            //    out_color = vec4(1., 1., 1., 1.);
         }
         else
             discard;

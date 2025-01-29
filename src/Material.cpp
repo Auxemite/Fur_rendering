@@ -122,7 +122,7 @@ Material Material::textured_normal_mapped_material() {
     material._program = Program::from_files("g_buffer.frag", "basic.vert", "",
                                             std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
     material._program_fur = Program::from_files("fur/fur.frag", "fur/fur.vert", "fur/test.geom",
-                                                std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
+                                                std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});                             
     material._program_fur_kjk = Program::from_files("fur/fur_kjk.frag", "fur/fur.vert", "fur/test.geom",
                                                     std::array<std::string, 2>{"TEXTURED", "NORMAL_MAPPED"});
     return material;

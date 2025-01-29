@@ -1,5 +1,7 @@
 #include "structs.glsl"
 
+#define INSTANCING 1
+
 float sqr(float x) {
     return x * x;
 }
