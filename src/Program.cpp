@@ -139,7 +139,7 @@ Program::Program(const std::string& frag, const std::string& vert) : _handle(glC
 Program::Program(const std::string& frag, const std::string& vert, const std::string& geom) : _handle(glCreateProgram()) {
     const GLuint vert_handle = create_shader(vert, GL_VERTEX_SHADER);
     const GLuint frag_handle = create_shader(frag, GL_FRAGMENT_SHADER);
-    const GLuint geom_handle = create_shader(geom, GL_FRAGMENT_SHADER);
+    const GLuint geom_handle = create_shader(geom, GL_GEOMETRY_SHADER);
 
     glAttachShader(_handle.get(), vert_handle);
     glAttachShader(_handle.get(), frag_handle);

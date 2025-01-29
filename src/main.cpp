@@ -171,31 +171,38 @@ void gui(ImGuiRenderer& imgui) {
         ImGui::Separator();
 
         if(ImGui::BeginMenu("Fur options")) {
-            ImGui::Checkbox("Kajiya-Kay", &kajyia_Kay);
-            ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200);
-            ImGui::DragFloat("Hair Density", &density, 1.f, 1.0f, 800.0f, "%.1f");
-            ImGui::DragFloat("Hair Rigidity", &rigidity, 0.1f, 0.1f, 100.0f, "%.1f");
+            ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200); 
+            ImGui::DragFloat("Fur Density", &fur_density, 1.f, 1.0f, 800.0f, "%.1f");
+            ImGui::DragFloat("Hair Rigidity", &hair_rigidity, 1.f, 0.1f, 100.0f, "%.1f");
             ImGui::DragFloat("Hair Length", &fur_length, .1f, 0.5f, 50.f, "%.2f", ImGuiSliderFlags_None);
             ImGui::DragFloat("Base thickness", &base_thickness, .01f, 0.0f, 2.0f, "%.3f");
             ImGui::DragFloat("Tip thickness", &tip_thickness, .01f, 0.0f, 2.0f, "%.3f");
-            ImGui::DragFloat("Min Length", &min_length, .01f, 0.0f, 1.0f, "%.3f");
-            ImGui::DragFloat("Max Length", &max_length, .01f, 0.0f, 1.0f, "%.3f");
+            ImGui::DragFloat("Min Length", &hair_min_length, .01f, 0.0f, 1.0f, "%.3f");
+            ImGui::DragFloat("Max Length", &hair_max_length, .01f, 0.0f, 1.0f, "%.3f");
+            ImGui::DragFloat("Hair Fuzziness", &hair_fuzziness, .01f, 0.0f, 10.f, "%.2f");
+            ImGui::DragFloat("Hair Fuzz_seed", &hair_fuzz_seed, .01f, 0.0f, 10.f, "%.2f");
+            ImGui::DragFloat("Hair Curliness", &hair_curliness, .01f, 0.0f, 50.f, "%.2f");
+            ImGui::DragFloat("Hair Curl_size", &hair_curl_size, .01f, 0.0f, 1.0f, "%.3f");
+          
             if(ImGui::Button("Reset")) {
                 shell_number = 32;
-                scale_base = 1.0f;
-                density = 325.f;
-                rigidity = 25.f;
+                fur_density = 325.f;
+                hair_rigidity = 25.f;
                 base_thickness = 1.5f; // [0. - 1.5]
                 tip_thickness = .05f; // [0. - 1.5]
-                fur_length = 3.75f;
-                min_length = 0.f; // [0. - 1.]
-                max_length = 1.f; // [0. - 1.]
-
+                fur_length = 1.f;
+                hair_min_length = 0.f; // [0. - 1.]
+                hair_max_length = 1.f; // [0. - 1.]
+                hair_fuzziness = 2.f; // [0. - 10.]
+                hair_fuzz_seed = 2.f; // [0. - 10.]
+                hair_curliness = 2.f; // [0. - 50.]
+                hair_curl_size = .2f; // [0. - 1.]
             }
             ImGui::EndMenu();
         }
 
         if(ImGui::BeginMenu("BRDF options")) {
+            ImGui::Checkbox("Kajiya-Kay", &kajyia_Kay);
             ImGui::DragFloat("Fur Lighting", &fur_lighting, 0.1f, 0.0f, 5.0f, "%.1f");
             ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
             ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
@@ -213,10 +220,14 @@ void gui(ImGuiRenderer& imgui) {
 
         if(ImGui::BeginMenu("Wind options")) {
             ImGui::DragFloat("Wind Strength", &wind_strength, .1f, -50.0f, 50.0f, "%.1f");
+            ImGui::DragFloat("Turbulence Strength", &turbulence_strength, .01f, 0.f, 10.0f, "%.2f");
             ImGui::DragFloat("Wind Direction (xy)", &wind_alpha, .01f, -10.f, 10.f, "%.2f");
             ImGui::DragFloat("Wind Direction (z)", &wind_beta, .01f, 0.f, 10.f, "%.2f");
             if(ImGui::Button("Reset")) {
-                exposure = 1.0f;
+                wind_strength = 10.f;
+                wind_alpha = 0.f; // [-10. - 10.]
+                wind_beta = 5.f; // // [0. - 10.]
+                turbulence_strength = 2.f; // // [0. - 10.]
             }
             ImGui::EndMenu();
         }
@@ -453,7 +464,8 @@ int main(int argc, char** argv) {
     sphere.set_material(std::make_shared<Material>(material));
     scene->add_object(sphere);
     scene->delete_object(0);
-
+//    scene = create_default_scene("rock.glb");
+    
     std::vector<PointLight> lights;
     {
         PointLight light;

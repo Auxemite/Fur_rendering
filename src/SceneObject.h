@@ -13,15 +13,21 @@ namespace OM3D {
 
     // Fur
     inline int shell_number = 64;
-    inline float scale_base = 1.0f;
-    inline float density = 325.f;
-    inline float rigidity = 25.f;
+    inline float fur_density = 325.f;
+    inline float hair_rigidity = 25.f;
     inline float base_thickness = 1.5f; // [0. - 1.5]
-  
     inline float tip_thickness = .2f; // [0. - 1.5]
     inline float fur_length = 0.5f;
-    inline float min_length = 0.f; // [0. - 1.]
-    inline float max_length = 1.f; // [0. - 1.]
+
+    // Hair constraint
+    inline float hair_fuzziness = 2.f; // [0. - 10.]
+    inline float hair_fuzz_seed = 2.f; // [0. - 10.]
+    
+    inline float hair_curliness = 2.f; // [0. - 50.]
+    inline float hair_curl_size = .2f; // [0. - 1.]
+
+    inline float hair_min_length = 0.f; // [0. - 1.]
+    inline float hair_max_length = 1.f; // [0. - 1.]
   
     // BRDF
     inline float fur_lighting = 0.0f;
@@ -34,6 +40,10 @@ namespace OM3D {
     inline float wind_strength = 10.f;
     inline float wind_alpha = 0.f; // [-10. - 10.]
     inline float wind_beta = 5.f; // // [0. - 10.]
+    inline float turbulence_strength = 5.f; // // [0. - 10.]
+
+    // Movement
+    // inline glm::vec3 movement;
 
 class SceneObject {
 

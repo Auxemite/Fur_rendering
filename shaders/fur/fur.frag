@@ -23,11 +23,11 @@ uniform float shell_rank;
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
 
-uniform float density;
+uniform float fur_density;
 uniform float base_thickness;
 uniform float tip_thickness;
-uniform float min_length;
-uniform float max_length;
+uniform float hair_min_length;
+uniform float hair_max_length;
 
 uniform float fur_lighting;
 uniform float roughness;
@@ -125,7 +125,7 @@ vec3 brdf(vec3 normal, float roughness, float metaless, vec2 in_uv, float random
 
 void main()
 {
-    vec2 uv = in_uv * density;
+    vec2 uv = in_uv * fur_density;
     vec2 uv_fract = fract(uv) * 2.0 - 1.0;
     ivec2 seed = ivec2(uv.x, uv.y);
     ivec2 seed2 = ivec2(uv.y, uv.x);
@@ -141,7 +141,7 @@ void main()
         albedo = Aces(albedo); // HDR
         out_color = LinearTosRGB(vec4(albedo, 1.0));
     }
-    else if (random > shell_rank && random >= min_length && random <= max_length)
+    else if (random > shell_rank && random >= hair_min_length && random <= hair_max_length)
     {
         if (length(uv_fract) <= thickness)
         {
