@@ -36,9 +36,9 @@ void Material::bind([[__maybe_unused__]]const RenderMode& renderMode, bool fur) 
             glDisable(GL_BLEND);
 
             // Backface Culling
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-            glFrontFace(GL_CCW);
+//            glEnable(GL_CULL_FACE); // For fur
+//            glCullFace(GL_BACK);
+//            glFrontFace(GL_CCW);
         break;
 
         case BlendMode::Alpha:
