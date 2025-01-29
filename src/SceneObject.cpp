@@ -28,13 +28,13 @@ SceneObject::SceneObject(std::shared_ptr<StaticMesh> mesh, std::shared_ptr<Mater
 }
 
 
-void SceneObject::render(const RenderMode& renderMode, bool fur, float time) const {
+void SceneObject::render(const RenderMode& renderMode, bool active_fur, float time) const {
     if(!_material || !_mesh) {
         return;
     }
 
     // Fur rendering
-    if (fur)
+    if (active_fur && fur)
     {
         #define INSTANCING 1
 
@@ -53,7 +53,7 @@ void SceneObject::render(const RenderMode& renderMode, bool fur, float time) con
        _material->set_fur_uniform(HASH("roughness"), roughness);
        _material->set_fur_uniform(HASH("metaless"), metaless);
        _material->set_fur_uniform(HASH("ambient"), ambient);
-        _material->set_fur_uniform(HASH("ambient_occlusion"), ambient_occlusion);
+       _material->set_fur_uniform(HASH("ambient_occ"), ambient_occlusion);
 
         // Wind Uniforms
         #define PI 3.14159f

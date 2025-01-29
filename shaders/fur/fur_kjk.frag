@@ -33,7 +33,7 @@ uniform float fur_lighting;
 uniform float roughness;
 uniform float metaless;
 uniform float ambient;
-uniform float ambient_occlution;
+uniform float ambient_occ;
 
 float pi = 3.14159265359;
 
@@ -72,7 +72,7 @@ float fresnelSchlick(float dotVH, float f0)
 
 // Kajiya-Kay shading model function
 vec3 kajiya_kay(vec3 tangent, vec3 bitangent, vec3 normal, vec3 light_dir,
-            vec3 view_dir, vec3 albedo, vec3 light_color, float random)
+            vec3 view_dir, vec3 albedo, vec3 light_color)
 {
     // Compute the effective normal
     vec3 strand_normal = normalize(light_dir - tangent * dot(tangent, light_dir));
@@ -91,7 +91,7 @@ vec3 kajiya_kay(vec3 tangent, vec3 bitangent, vec3 normal, vec3 light_dir,
 //    specular = 0.0;
 
     // Combine lighting
-    vec3 color = (diffuse * albedo * random + specular * light_color) * light_color;
+    vec3 color = (diffuse * albedo + specular * light_color) * light_color;
     return color;
 }
 
@@ -102,13 +102,22 @@ void main()
     ivec2 seed = ivec2(uv.x, uv.y);
     ivec2 seed2 = ivec2(uv.y, uv.x);
     float random = rand(seed); // random value [0, 1]
-    float random2 = 1.0; //rand(seed2) * 0.5 + 0.5; // random value [0, 1]
+    float random2 = rand(seed2) * 0.5 + 0.5; // random value [0.5, 1]
     float thickness =  base_thickness + (shell_rank / random) * (tip_thickness - base_thickness);
     float fur_deepness = pow(0.5 + 0.5 * shell_rank / thickness, fur_lighting);
 
+    float variation = sin(in_normal.x) * sin(in_normal.y) * sin(in_normal.z) * pi;
+    variation = variation * 0.5 + 0.5;
+
+    vec3 albedo = vec3(0.5, 0.0, 0.0) * random2 * texture(in_texture, in_uv).rgb;
+//    albedo = vec3(0.5, 0.0, 0.0) * texture(in_texture, in_uv).rgb;
+
+//    #ifdef TEXTURED
+//        albedo = vec3(1.0) * random2 * texture(in_texture, in_uv).rgb;
+//    #endif
+
     if (shell_rank == 0) {
-        vec3 albedo = vec3(1.0) * texture(in_texture, in_uv).rgb;
-        vec3 final_color = fur_deepness * (albedo + vec3(ambient));
+        vec3 final_color = fur_deepness * (albedo + vec3(ambient)) * ambient_occ;
         final_color = sRGBToLinear(vec4(final_color, 1.0)).rgb;
         final_color = Aces(final_color); // HDR tone mapping
         out_color = LinearTosRGB(vec4(final_color, 1.0));
@@ -118,25 +127,19 @@ void main()
         if (length(uv_fract) <= thickness)
         {
             // Sample textures
-            vec3 albedo = vec3(0.1, 0.0, 0.0) * texture(in_texture, in_uv).rgb;
-
             vec3 light_direction = vec3(5.0, 5.0, 0.0); // Directional light source
             vec3 light_color = vec3(1.0); // Light color
 
-            // Transform normal map to world space
-            vec3 tangent = normalize(in_tangent);
-            vec3 bitangent = normalize(in_bitangent);
-            vec3 normal = normalize(in_normal);
-
-            mat3 TBN = mat3(tangent, bitangent, normal);
+            mat3 TBN = mat3(in_tangent, in_bitangent, in_normal);
             vec3 world_normal = normalize(TBN * vec3(1.0));
 
             // Kajiya-Kay lighting
-           vec3 irradiance = kajiya_kay(tangent, bitangent, world_normal, normalize(light_direction),
-                                    normalize(out_view_direction), albedo, light_color, random2);
+            vec3 irradiance = kajiya_kay(in_tangent, in_bitangent, world_normal, normalize(light_direction),
+                                    out_view_direction, albedo * variation, light_color);
+//            irradiance = albedo * variation;
 
             // Apply ambient lighting
-            vec3 final_color = fur_deepness * (irradiance + vec3(ambient));
+            vec3 final_color = fur_deepness * (irradiance + vec3(ambient)) * ambient_occ;
 
             // Apply tone mapping and gamma correction
             final_color = sRGBToLinear(vec4(final_color, 1.0)).rgb;
@@ -144,8 +147,8 @@ void main()
             out_color = LinearTosRGB(vec4(final_color, 1.0));
         }
         else
-        discard;
+            discard;
     }
     else
-    discard;
+        discard;
 }

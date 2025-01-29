@@ -33,7 +33,7 @@ uniform float fur_lighting;
 uniform float roughness;
 uniform float metaless;
 uniform float ambient;
-uniform float ambient_occlusion;
+uniform float ambient_occ;
 
 float pi = 3.14159265359;
 
@@ -145,7 +145,7 @@ void main()
     {
         if (length(uv_fract) <= thickness)
         {
-            vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv, random2) * fur_deepness * ambient_occlusion;
+            vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv, random2) * fur_deepness * ambient_occ;
 
             vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient * fur_deepness), 1.0)).rgb;
             albedo = Aces(albedo); // HDR

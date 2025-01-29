@@ -172,18 +172,12 @@ void gui(ImGuiRenderer& imgui) {
 
         if(ImGui::BeginMenu("Fur options")) {
             ImGui::Checkbox("Kajiya-Kay", &kajyia_Kay);
-            ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200); 
+            ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200);
             ImGui::DragFloat("Hair Density", &density, 1.f, 1.0f, 800.0f, "%.1f");
             ImGui::DragFloat("Hair Rigidity", &rigidity, 0.1f, 0.1f, 100.0f, "%.1f");
             ImGui::DragFloat("Hair Length", &fur_length, .1f, 0.5f, 50.f, "%.2f", ImGuiSliderFlags_None);
             ImGui::DragFloat("Base thickness", &base_thickness, .01f, 0.0f, 2.0f, "%.3f");
             ImGui::DragFloat("Tip thickness", &tip_thickness, .01f, 0.0f, 2.0f, "%.3f");
-            ImGui::Text("Lighting properties");
-            ImGui::DragFloat("Fur Lighting", &fur_lighting, 0.1f, 0.0f, 5.0f, "%.1f");
-            ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
-            ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
-            ImGui::DragFloat("Ambient", &ambient, 0.01f, 0.0f, 1.0f, "%.2f");
-            ImGui::DragFloat("Ambient Occlusion", &ambient_occlusion, 0.01f, 0.0f, 1.0f, "%.2f");
             ImGui::DragFloat("Min Length", &min_length, .01f, 0.0f, 1.0f, "%.3f");
             ImGui::DragFloat("Max Length", &max_length, .01f, 0.0f, 1.0f, "%.3f");
             if(ImGui::Button("Reset")) {
@@ -197,6 +191,22 @@ void gui(ImGuiRenderer& imgui) {
                 min_length = 0.f; // [0. - 1.]
                 max_length = 1.f; // [0. - 1.]
 
+            }
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("BRDF options")) {
+            ImGui::DragFloat("Fur Lighting", &fur_lighting, 0.1f, 0.0f, 5.0f, "%.1f");
+            ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Ambient", &ambient, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Ambient Occlusion", &ambient_occlusion, 0.01f, 0.0f, 1.0f, "%.2f");
+            if(ImGui::Button("Reset")) {
+                fur_lighting = 0.0f;
+                roughness = 0.6f;
+                metaless = 0.0f;
+                ambient = 0.0f;
+                ambient_occlusion = 1.0f;
             }
             ImGui::EndMenu();
         }
