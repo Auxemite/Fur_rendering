@@ -1,5 +1,7 @@
 #version 450
 
+#define INSTANCING 1
+
 layout(triangles)in;
 layout(triangle_strip, max_vertices = 15)out;
 

@@ -3,7 +3,7 @@
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
-#define INSTANCING 0
+#define INSTANCING 1
 
 layout(location = 0) in vec3 in_normal[];
 layout(location = 1) in vec2 in_uv[];

@@ -13,7 +13,7 @@ layout(location = 2) in vec3 in_color;
 layout(location = 3) in vec3 in_position;
 layout(location = 4) in vec3 in_tangent;
 layout(location = 5) in vec3 in_bitangent;
-layout(location = 6) in vec3 out_view_direction;
+layout(location = 6) in vec3 in_view_direction;
 #if INSTANCING == 1
 layout(location = 7) in float shell_rank;
 #else
@@ -23,11 +23,11 @@ uniform float shell_rank;
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
 
-uniform float density;
+uniform float fur_density;
 uniform float base_thickness;
 uniform float tip_thickness;
-uniform float min_length;
-uniform float max_length;
+uniform float hair_min_length;
+uniform float hair_max_length;
 
 uniform float fur_lighting;
 uniform float roughness;
@@ -97,7 +97,7 @@ vec3 kajiya_kay(vec3 tangent, vec3 bitangent, vec3 normal, vec3 light_dir,
 
 void main()
 {
-    vec2 uv = in_uv * density;
+    vec2 uv = in_uv * fur_density;
     vec2 uv_fract = fract(uv) * 2.0 - 1.0;
     ivec2 seed = ivec2(uv.x, uv.y);
     ivec2 seed2 = ivec2(uv.y, uv.x);
@@ -122,7 +122,7 @@ void main()
         final_color = Aces(final_color); // HDR tone mapping
         out_color = LinearTosRGB(vec4(final_color, 1.0));
     }
-    else if (random > shell_rank && random >= min_length && random <= max_length)
+    else if (random > shell_rank && random >= hair_min_length && random <= hair_max_length)
     {
         if (length(uv_fract) <= thickness)
         {
@@ -135,7 +135,7 @@ void main()
 
             // Kajiya-Kay lighting
             vec3 irradiance = kajiya_kay(in_tangent, in_bitangent, world_normal, normalize(light_direction),
-                                    out_view_direction, albedo * variation, light_color);
+                                    in_view_direction, albedo * variation, light_color);
 //            irradiance = albedo * variation;
 
             // Apply ambient lighting
