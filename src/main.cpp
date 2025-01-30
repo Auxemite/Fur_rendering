@@ -21,8 +21,8 @@ using namespace OM3D;
 
 static RenderMode render_mode = RenderMode::Default;
 static float delta_time = 0.0f;
+static float total_time = 0.0f;
 static std::unique_ptr<Scene> scene;
-static std::unique_ptr<Scene> sphere_scene;
 static float exposure = 1.0;
 static std::vector<std::string> scene_files;
 
@@ -55,6 +55,7 @@ void update_delta_time() {
     static double time = 0.0;
     const double new_time = program_time();
     delta_time = float(new_time - time);
+    total_time += delta_time;
     time = new_time;
 }
 
@@ -159,9 +160,89 @@ void gui(ImGuiRenderer& imgui) {
             if(ImGui::MenuItem("Depth")) {
                 render_mode = RenderMode::Depth;
             }
+            if(ImGui::MenuItem("Tangent")) {
+                render_mode = RenderMode::Tangent;
+            }
+            if(ImGui::MenuItem("Bitangent")) {
+                render_mode = RenderMode::Bitangent;
+            }
             ImGui::EndMenu();
         }
         ImGui::Separator();
+
+        if(ImGui::BeginMenu("Fur options")) {
+            ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200); 
+            ImGui::DragFloat("Fur Density", &fur_density, 1.f, 1.0f, 800.0f, "%.1f");
+            ImGui::DragFloat("Hair Rigidity", &hair_rigidity, 1.f, 1.f, 100.0f, "%.1f");
+            ImGui::DragFloat("Hair Length", &fur_length, .1f, 0.1f, 30.f, "%.2f", ImGuiSliderFlags_None);
+            ImGui::DragFloat("Base thickness", &base_thickness, .01f, 0.0f, 2.0f, "%.3f");
+            ImGui::DragFloat("Tip thickness", &tip_thickness, .01f, 0.0f, 2.0f, "%.3f");
+            ImGui::DragFloat("Min Length", &hair_min_length, .01f, 0.0f, 1.0f, "%.3f");
+            ImGui::DragFloat("Max Length", &hair_max_length, .01f, 0.0f, 1.0f, "%.3f");
+            ImGui::DragFloat("Hair Fuzziness", &hair_fuzziness, .01f, 0.0f, 10.f, "%.2f");
+            ImGui::DragFloat("Hair Fuzz_seed", &hair_fuzz_seed, .01f, 0.0f, 10.f, "%.2f");
+            ImGui::DragFloat("Hair Curliness", &hair_curliness, .01f, 0.0f, 50.f, "%.2f");
+            ImGui::DragFloat("Hair Curl_size", &hair_curl_size, .01f, 0.0f, 1.0f, "%.3f");
+          
+            if(ImGui::Button("Reset")) {
+                shell_number = 32;
+                fur_density = 325.f;
+                hair_rigidity = 25.f;
+                base_thickness = 1.5f; // [0. - 1.5]
+                tip_thickness = .05f; // [0. - 1.5]
+                fur_length = .5f;
+                hair_min_length = 0.f; // [0. - 1.]
+                hair_max_length = 1.f; // [0. - 1.]
+                hair_fuzziness = 2.f; // [0. - 10.]
+                hair_fuzz_seed = 2.f; // [0. - 10.]
+                hair_curliness = 2.f; // [0. - 50.]
+                hair_curl_size = .2f; // [0. - 1.]
+            }
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("BRDF options")) {
+            ImGui::Checkbox("Kajiya-Kay", &kajyia_Kay);
+            ImGui::DragFloat("Fur Lighting", &fur_lighting, 0.1f, 0.0f, 5.0f, "%.1f");
+            ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Ambient", &ambient, 0.01f, 0.0f, 1.0f, "%.2f");
+            ImGui::DragFloat("Ambient Occlusion", &ambient_occlusion, 0.01f, 0.0f, 1.0f, "%.2f");
+            if(ImGui::Button("Reset")) {
+                fur_lighting = 0.0f;
+                roughness = 0.6f;
+                metaless = 0.0f;
+                ambient = 0.0f;
+                ambient_occlusion = 1.0f;
+            }
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("Wind options")) {
+            ImGui::DragFloat("Wind Strength", &wind_strength, .1f, -50.0f, 50.0f, "%.1f");
+            ImGui::DragFloat("Turbulence Strength", &turbulence_strength, .01f, 0.f, 10.0f, "%.2f");
+            ImGui::DragFloat("Wind Direction (xy)", &wind_alpha, .01f, -10.f, 10.f, "%.2f");
+            ImGui::DragFloat("Wind Direction (z)", &wind_beta, .01f, 0.f, 10.f, "%.2f");
+            if(ImGui::Button("Reset")) {
+                wind_strength = 10.f;
+                wind_alpha = 0.f; // [-10. - 10.]
+                wind_beta = 5.f; // // [0. - 10.]
+                turbulence_strength = 2.f; // // [0. - 10.]
+            }
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("Fins options")) {
+            ImGui::Checkbox("Show shell", &show_shell);
+            ImGui::Checkbox("Show fins", &show_fins);
+            ImGui::DragFloat("Fins threshold", &fins_threshold, .01f, 0.f, 1.f, "%.3f");
+            if(ImGui::Button("Reset")) {
+                show_shell = true;
+                show_fins = true;
+                fins_threshold = 0.5; // [0. - 1.]
+            }
+            ImGui::EndMenu();
+        }
 
         if(ImGui::MenuItem("GPU Profiler")) {
             open_gpu_profiler = true;
@@ -328,11 +409,15 @@ struct RendererState {
             state.depth_texture = Texture(size, ImageFormat::Depth32_FLOAT);
             state.albedo_texture = Texture(size, ImageFormat::RGBA8_sRGB);
             state.normal_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.tangent_texture = Texture(size, ImageFormat::RGBA8_UNORM);
+            state.bitangent_texture = Texture(size, ImageFormat::RGBA8_UNORM);
             state.lit_hdr_texture = Texture(size, ImageFormat::RGBA16_FLOAT);
             state.tone_mapped_texture = Texture(size, ImageFormat::RGBA8_UNORM);
 
             state.depth_framebuffer = Framebuffer(&state.depth_texture);
-            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
+            state.main_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.lit_hdr_texture});
+//            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture});
+            state.g_buffer_framebuffer = Framebuffer(&state.depth_texture, std::array{&state.albedo_texture, &state.normal_texture, &state.tangent_texture, &state.bitangent_texture});
             state.lit_framebuffer = Framebuffer(nullptr, std::array{&state.lit_hdr_texture});
             state.tone_map_framebuffer = Framebuffer(nullptr, std::array{&state.tone_mapped_texture});
         }
@@ -345,12 +430,15 @@ struct RendererState {
     Texture lit_hdr_texture;
     Texture albedo_texture;
     Texture normal_texture;
+    Texture tangent_texture;
+    Texture bitangent_texture;
     Texture tone_mapped_texture;
 
     Framebuffer depth_framebuffer;
     Framebuffer test_framebuffer;
     Framebuffer tone_map_framebuffer;
     Framebuffer g_buffer_framebuffer;
+    Framebuffer main_framebuffer;
     Framebuffer lit_framebuffer;
 };
 
@@ -377,11 +465,19 @@ int main(int argc, char** argv) {
 
     ImGuiRenderer imgui(window);
 
-    scene = create_default_scene("bistro_lights.glb");
+//    scene = create_default_scene("bistro_lights.glb");
 //    scene = create_default_scene("forest.glb");
+    scene = create_default_scene("cube.glb");
 //    scene = create_default_scene("forest_huge.glb");
-//    scene = create_default_scene("cube.glb");
-    sphere_scene = create_default_scene("sphere.glb");
+//    scene = create_default_scene("rock.glb");
+
+    const std::unique_ptr<Scene> sphere_scene = create_default_scene("sphere2.glb");
+    SceneObject sphere = sphere_scene->objects()[0];
+    Material material = Material::textured_normal_mapped_material();
+    sphere.set_material(std::make_shared<Material>(material));
+    scene->add_object(sphere);
+    scene->delete_object(0);
+    
     std::vector<PointLight> lights;
     {
         PointLight light;
@@ -398,20 +494,20 @@ int main(int argc, char** argv) {
         lights.push_back(light);
     }
 
-    for (const auto & light : lights) {
-        const glm::vec3& pos = light.position();
-        sphere_scene->copy_object(0, pos);
-    }
+//    for (const auto & light : lights) {
+//        const glm::vec3& pos = light.position();
+//        sphere_scene->copy_object(0, pos);
+//    }
     // print infos of the scene objects
 //    for(const SceneObject& obj : sphere_scene->objects())
 //    {
 //        obj.print_info();
 //    }
 
-    auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert");
-    auto debug_program = Program::from_files("debug.frag", "screen.vert");
-    auto sun_program = Program::from_files("sun.frag", "screen.vert");
-    auto lights_program = Program::from_files("lights.frag", "screen.vert");
+    auto tonemap_program = Program::from_files("tonemap.frag", "screen.vert", "");
+    auto debug_program = Program::from_files("debug.frag", "screen.vert", "");
+    auto sun_program = Program::from_files("sun.frag", "screen.vert", "");
+    auto lights_program = Program::from_files("lights.frag", "screen.vert", "");
     RendererState renderer;
 
     int i = 0;
@@ -447,7 +543,7 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("Zprepass");
 
                 renderer.depth_framebuffer.bind(true, false);
-                scene->render(RenderMode::GBuffer, i);
+                scene->render(RenderMode::GBuffer, i, false, total_time);
             }
 
             // Render the scene
@@ -455,47 +551,47 @@ int main(int argc, char** argv) {
                 PROFILE_GPU("G Buffer pass");
 
                 renderer.g_buffer_framebuffer.bind(false, true);
-                scene->render(RenderMode::GBuffer, i);
+                scene->render(RenderMode::GBuffer, i, false, total_time);
+            }
+
+            {
+                PROFILE_GPU("Main pass");
+
+                renderer.main_framebuffer.bind(false, true);
+                scene->render(render_mode, ++i, true, total_time);
+                i %= 60;
             }
 
 //            {
-//                PROFILE_GPU("Main pass");
+//                PROFILE_GPU("Lighting pass : Point lights");
 //
-//                renderer.main_framebuffer.bind(false, true);
-//                scene->render(render_mode, ++i);
-//                i %= 60;
+//                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
+//                TypedBuffer<shader::PointLight> light_buffer = scene->get_lights_frame_data();
+//                // print light radiuses
+//
+//                glFrontFace(GL_CW);
+//                renderer.lit_framebuffer.bind(false, true);
+//                buffer.bind(BufferUsage::Uniform, 0);
+//                light_buffer.bind(BufferUsage::Storage, 1);
+//                renderer.albedo_texture.bind(0);
+//                renderer.normal_texture.bind(1);
+//                renderer.depth_texture.bind(2);
+//                lights_program->bind();
+//                glDrawArrays(GL_TRIANGLES, 0, 3);
 //            }
-
-            {
-                PROFILE_GPU("Lighting pass : Point lights");
-
-                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
-                TypedBuffer<shader::PointLight> light_buffer = scene->get_lights_frame_data();
-                // print light radiuses
-
-                glFrontFace(GL_CW);
-                renderer.lit_framebuffer.bind(false, true);
-                buffer.bind(BufferUsage::Uniform, 0);
-                light_buffer.bind(BufferUsage::Storage, 1);
-                renderer.albedo_texture.bind(0);
-                renderer.normal_texture.bind(1);
-                renderer.depth_texture.bind(2);
-                lights_program->bind();
-                glDrawArrays(GL_TRIANGLES, 0, 3);
-            }
-            {
-                PROFILE_GPU("Lighting pass : Sun");
-
-                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
-                glFrontFace(GL_CW);
-                renderer.lit_framebuffer.bind(false, false);
-                buffer.bind(BufferUsage::Uniform, 0);
-                renderer.albedo_texture.bind(0);
-                renderer.normal_texture.bind(1);
-                renderer.lit_hdr_texture.bind(2);
-                sun_program->bind();
-                glDrawArrays(GL_TRIANGLES, 0, 3);
-            }
+//            {
+//                PROFILE_GPU("Lighting pass : Sun");
+//
+//                TypedBuffer<shader::FrameData> buffer = scene->get_sun_frame_data();
+//                glFrontFace(GL_CW);
+//                renderer.lit_framebuffer.bind(false, false);
+//                buffer.bind(BufferUsage::Uniform, 0);
+//                renderer.albedo_texture.bind(0);
+//                renderer.normal_texture.bind(1);
+//                renderer.lit_hdr_texture.bind(2);
+//                sun_program->bind();
+//                glDrawArrays(GL_TRIANGLES, 0, 3);
+//            }
 
             // Apply a tonemap in compute shader
             {
@@ -504,7 +600,7 @@ int main(int argc, char** argv) {
                 // Tone Mapping Triangle is Facing away from camera
                 glFrontFace(GL_CW);
 
-                renderer.tone_map_framebuffer.bind(false, true);
+                renderer.tone_map_framebuffer.bind(false, false);
                 if (render_mode != RenderMode::Default) {
                     debug_program->bind();
                     debug_program->set_uniform(HASH("render_mode"), static_cast<u32>(render_mode));
@@ -516,6 +612,14 @@ int main(int argc, char** argv) {
 
                         case RenderMode::Depth:
                             renderer.depth_texture.bind(0);
+                            break;
+
+                        case RenderMode::Tangent:
+                            renderer.tangent_texture.bind(0);
+                            break;
+
+                        case RenderMode::Bitangent:
+                            renderer.bitangent_texture.bind(0);
                             break;
 
                         default:
@@ -549,4 +653,5 @@ int main(int argc, char** argv) {
     }
 
     scene = nullptr; // destroy scene and child OpenGL objects
+    return 0;
 }

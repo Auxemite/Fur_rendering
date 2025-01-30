@@ -9,6 +9,8 @@
 
 namespace OM3D {
 
+inline bool kajyia_Kay = true;
+
 enum RenderMode {
     Default = 0,
     Albedo = 1,
@@ -16,6 +18,8 @@ enum RenderMode {
     Depth = 3,
     GBuffer = 4,
     Lit = 5,
+    Tangent = 6,
+    Bitangent = 7
 };
 
 enum class BlendMode {
@@ -45,9 +49,16 @@ class Material {
         void set_uniform(Args&&... args) {
             _program->set_uniform(FWD(args)...);
         }
+        template<typename... Args>
+        void set_fur_uniform(Args&&... args) {
+            if (kajyia_Kay)
+                _program_fur_kjk->set_uniform(FWD(args)...);
+            else
+                _program_fur->set_uniform(FWD(args)...);
+        }
 
 
-        void bind(const RenderMode& renderMode) const;
+        void bind(const RenderMode& renderMode, bool fur) const;
 
         static std::shared_ptr<Material> empty_material();
         static Material textured_material();
@@ -56,6 +67,8 @@ class Material {
 
     private:
         std::shared_ptr<Program> _program;
+        std::shared_ptr<Program> _program_fur;
+        std::shared_ptr<Program> _program_fur_kjk;
         std::vector<std::pair<u32, std::shared_ptr<Texture>>> _textures;
 
         BlendMode _blend_mode = BlendMode::None;

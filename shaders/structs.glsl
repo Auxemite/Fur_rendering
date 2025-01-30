@@ -1,5 +1,6 @@
 struct CameraData {
     mat4 view_proj;
+    vec3 position;
 };
 
 struct FrameData {

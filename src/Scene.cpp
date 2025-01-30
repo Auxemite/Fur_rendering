@@ -12,6 +12,10 @@ void Scene::add_object(SceneObject obj) {
     _objects.emplace_back(std::move(obj));
 }
 
+void Scene::delete_object(int i) {
+    _objects.erase(_objects.begin() + i);
+}
+
 void Scene::copy_object(int i, const glm::vec3& pos) {
     SceneObject obj = _objects[i];
     obj.set_center(pos);
@@ -60,6 +64,7 @@ TypedBuffer<shader::FrameData> Scene::get_sun_frame_data() {
     {
         auto mapping = buffer.map(AccessType::WriteOnly);
         mapping[0].camera.view_proj = _camera.view_proj_matrix();
+        mapping[0].camera.position = _camera.position();
         mapping[0].point_light_count = u32(_point_lights.size());
         mapping[0].sun_color = _sun_color;
         mapping[0].sun_dir = glm::normalize(_sun_direction);
@@ -84,12 +89,13 @@ TypedBuffer<shader::PointLight> Scene::get_lights_frame_data() {
     return light_buffer;
 }
 
-void Scene::render(const RenderMode& renderMode, int rendered_nb) const {
+void Scene::render(const RenderMode& renderMode, int rendered_nb, bool active_fur, float time) const {
     // Fill and bind frame data buffer
     TypedBuffer<shader::FrameData> buffer(nullptr, 1);
     {
         auto mapping = buffer.map(AccessType::WriteOnly);
         mapping[0].camera.view_proj = _camera.view_proj_matrix();
+        mapping[0].camera.position = _camera.position();
         mapping[0].point_light_count = u32(_point_lights.size());
         mapping[0].sun_color = _sun_color;
         mapping[0].sun_dir = glm::normalize(_sun_direction);
@@ -118,7 +124,9 @@ void Scene::render(const RenderMode& renderMode, int rendered_nb) const {
     {
         if(obj.is_visible(_camera))
         {
-            obj.render(renderMode);
+            // distance from camera
+            obj.render(renderMode, active_fur, time);
+            // const float distance = glm::length(_camera.position() - obj.get_center());
             count++;
         }
     }
