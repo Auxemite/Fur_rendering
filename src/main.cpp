@@ -179,9 +179,9 @@ void gui(ImGuiRenderer& imgui) {
             ImGui::DragFloat("Tip thickness", &tip_thickness, .01f, 0.0f, 2.0f, "%.3f");
             ImGui::DragFloat("Min Length", &hair_min_length, .01f, 0.0f, 1.0f, "%.3f");
             ImGui::DragFloat("Max Length", &hair_max_length, .01f, 0.0f, 1.0f, "%.3f");
-            ImGui::DragFloat("Hair Fuzziness", &hair_fuzziness, .01f, 0.0f, 10.f, "%.2f");
-            ImGui::DragFloat("Hair Fuzz_seed", &hair_fuzz_seed, .01f, 0.0f, 10.f, "%.2f");
-            ImGui::DragFloat("Hair Curliness", &hair_curliness, .01f, 0.0f, 50.f, "%.2f");
+            ImGui::DragFloat("Hair Fuzziness", &hair_fuzziness, .1f, 0.0f, 10.f, "%.2f");
+            ImGui::DragFloat("Hair Fuzz_seed", &hair_fuzz_seed, .1f, 0.0f, 10.f, "%.2f");
+            ImGui::DragFloat("Hair Curliness", &hair_curliness, 1.0f, 0.0f, 50.f, "%.2f");
             ImGui::DragFloat("Hair Curl_size", &hair_curl_size, .01f, 0.0f, 1.0f, "%.3f");
           
             if(ImGui::Button("Reset")) {
@@ -207,7 +207,7 @@ void gui(ImGuiRenderer& imgui) {
             if (kajyia_Kay) {
                 ImGui::DragFloat("KS", &ks, 0.01f, 0.0f, 1.0f, "%.1f");
                 ImGui::DragFloat("KSS", &kss, 0.01f, 0.0f, 1.0f, "%.2f");
-                ImGui::DragFloat("PS", &ps, 0.01f, 0.0f, 1.0f, "%.2f");
+                ImGui::DragFloat("PS", &ps, 0.0001f, 0.0f, 0.1f, "%.4f");
                 ImGui::DragFloat("PSS", &pss, 0.01f, 0.0f, 1.0f, "%.2f");
                 ImGui::DragFloat("KD", &kd, 0.1f, 0.0f, 5.0f, "%.1f");
             }
@@ -476,8 +476,8 @@ int main(int argc, char** argv) {
     ImGuiRenderer imgui(window);
 
 //    scene = create_default_scene("bistro_lights.glb");
-    scene = create_default_scene("forest.glb");
-//    scene = create_default_scene("cube.glb");
+//    scene = create_default_scene("forest.glb");
+    scene = create_default_scene("cube.glb");
 //    scene = create_default_scene("forest_huge.glb");
 //    scene = create_default_scene("rock.glb");
 

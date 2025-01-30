@@ -94,14 +94,14 @@ vec3 kajiya_kay(vec3 T, vec3 B, vec3 N, vec3 L,
     // Specular term
     float dotBL = dot(B, L);
     float dotBV = dot(B, V);
-    float spec = dotBL * dotBV + sinSpec(B, L, dotBL) * sinSpec(B, V, dotBV);
-    vec3 specular = ks * vec3(min(pow(spec, 1000.0 / (ps + 0.001)), 1.0));
+    float spec = min(dotBL * dotBV + sinSpec(B, L, dotBL) * sinSpec(B, V, dotBV), 0.9999);
+    vec3 specular = ks * vec3(min(pow(spec, 10.0 / (ps * ps + 0.000001)), 1.0));
 
     // Specular secondary term
     vec3 BS = normalize(B + N * 0.2);
     dotBL = dot(BS, L);
     dotBV = dot(BS, V);
-    float spec2 = dotBL * dotBV + sinSpec(BS, L, dotBV) * sinSpec(BS, V, dotBV);
+    float spec2 = min(dotBL * dotBV + sinSpec(BS, L, dotBV) * sinSpec(BS, V, dotBV), 0.9999);
     specular += kss * min(pow(spec2, 10.0 / (pss + 0.001)), 1.0) * albedo;
     specular = min(specular, vec3(1.0));
 
