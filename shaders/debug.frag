@@ -21,4 +21,7 @@ void main()
         const float depth = pow(color.r, 0.35);
         out_color = vec4(vec3(depth), 1.0);
     }
+    else {
+        out_color = vec4(color, 1.0);
+    }
 }

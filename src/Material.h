@@ -9,7 +9,7 @@
 
 namespace OM3D {
 
-inline bool kajyia_Kay = false;
+inline bool kajyia_Kay = true;
 
 enum RenderMode {
     Default = 0,
