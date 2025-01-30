@@ -476,8 +476,8 @@ int main(int argc, char** argv) {
     ImGuiRenderer imgui(window);
 
 //    scene = create_default_scene("bistro_lights.glb");
-//    scene = create_default_scene("forest.glb");
-    scene = create_default_scene("cube.glb");
+    scene = create_default_scene("forest.glb");
+//    scene = create_default_scene("cube.glb");
 //    scene = create_default_scene("forest_huge.glb");
 //    scene = create_default_scene("rock.glb");
 

@@ -95,7 +95,7 @@ vec3 kajiya_kay(vec3 T, vec3 B, vec3 N, vec3 L,
     float dotBL = dot(B, L);
     float dotBV = dot(B, V);
     float spec = dotBL * dotBV + sinSpec(B, L, dotBL) * sinSpec(B, V, dotBV);
-    vec3 specular = ks * vec3(min(pow(spec, 100.0 / (ps + 0.001)), 1.0));
+    vec3 specular = ks * vec3(min(pow(spec, 1000.0 / (ps + 0.001)), 1.0));
 
     // Specular secondary term
     vec3 BS = normalize(B + N * 0.2);
@@ -120,7 +120,7 @@ void main()
     float random2 = rand(seed2) * 0.5 + 0.5; // random value [0.5, 1]
     float thickness =  base_thickness + (shell_rank / random) * (tip_thickness - base_thickness);
     float fur_deepness = pow(0.5 + 0.5 * shell_rank / thickness, fur_lighting);
-    vec3 albedo = vec3(0.5, 0.0, 0.0) * random2 * texture(in_texture, in_uv).rgb;
+    vec3 albedo = random2 * texture(in_texture, in_uv).rgb;
     float variation = sin(in_normal.x) * sin(in_normal.y) * sin(in_normal.z) * pi;
     variation = variation * 0.5 + 0.5;
 
