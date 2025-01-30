@@ -36,7 +36,7 @@ void SceneObject::render(const RenderMode& renderMode, bool active_fur, float ti
     // Fur rendering
     if (active_fur && fur)
     {
-        #define INSTANCING 1
+        #define INSTANCING 0
 
         // Fur Uniforms
         _material->set_fur_uniform(HASH("time"), time);
@@ -78,6 +78,12 @@ void SceneObject::render(const RenderMode& renderMode, bool active_fur, float ti
 
         for (u32 i = 0; i < nb_shell; ++i)
             shells_rank[i] = float(i) / float(nb_shell - 1);
+
+        // Shell number to determine shells thicness for Fins
+        _material->set_fur_uniform(HASH("shell_nb"), nb_shell);
+        _material->set_fur_uniform(HASH("show_shell"), u32(show_shell));
+        _material->set_fur_uniform(HASH("show_fins"), u32(show_fins));
+        _material->set_fur_uniform(HASH("fins_threshold"), fins_threshold);
 
         #if INSTANCING == 1
             _material->bind(renderMode, fur);

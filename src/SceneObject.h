@@ -45,6 +45,11 @@ namespace OM3D {
     // Movement
     // inline glm::vec3 movement;
 
+    // Fins
+    inline bool show_shell = true;
+    inline bool show_fins = true;
+    inline float fins_threshold = 0.5; // [0. - 1.]
+
 class SceneObject {
 
     public:

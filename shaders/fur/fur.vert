@@ -23,6 +23,7 @@ layout(location = 6) out vec3 out_view_direction;
 #if INSTANCING == 1
     layout(location = 7) out float out_shell_rank;
 #endif
+layout(location = 8) out int out_is_surface;
 
 
 layout(binding = 0) uniform Data {

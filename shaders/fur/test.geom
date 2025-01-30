@@ -30,7 +30,6 @@ layout(location = 6) out vec3 out_view_direction;
 #endif
 layout(location = 8) out int out_is_surface;
 
-
 void main()
 {
     for(int i = 0; i < 3; i++)
