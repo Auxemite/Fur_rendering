@@ -31,16 +31,16 @@ namespace OM3D {
   
     // BRDF
     inline float fur_lighting = 0.0f;
-    inline float roughness = 0.6f;
-    inline float metaless = 0.0f;
+    inline float roughness = 0.2f;
+    inline float metaless = 0.7f;
     inline float ambient = 0.0f;
     inline float ambient_occlusion = 1.0f;
   
     // Wind
-    inline float wind_strength = 10.f;
+    inline float wind_strength = 0.f;
     inline float wind_alpha = 0.f; // [-10. - 10.]
     inline float wind_beta = 5.f; // // [0. - 10.]
-    inline float turbulence_strength = 5.f; // // [0. - 10.]
+    inline float turbulence_strength = 0.f; // // [0. - 10.]
 
     // Movement
     // inline glm::vec3 movement;

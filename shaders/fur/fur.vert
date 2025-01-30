@@ -167,6 +167,8 @@ void main() {
     vec3 fall_in_normal = normalize(falloff);
     out_normal = normalize(mat3(model) * fall_in_normal);
     vec3 up = vec3(0.0, 1.0, 0.0);
+    if (abs(dot(up, fall_in_normal)) > 0.99)
+        up = vec3(1.0, 0.0, 0.0);
     out_tangent = normalize(mat3(model) * cross(up, fall_in_normal));
     out_bitangent = normalize(cross(out_tangent, out_normal));
 

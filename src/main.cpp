@@ -457,6 +457,7 @@ int main(int argc, char** argv) {
 //    scene = create_default_scene("forest.glb");
     scene = create_default_scene("cube.glb");
 //    scene = create_default_scene("forest_huge.glb");
+//    scene = create_default_scene("rock.glb");
 
     const std::unique_ptr<Scene> sphere_scene = create_default_scene("sphere2.glb");
     SceneObject sphere = sphere_scene->objects()[0];
@@ -464,7 +465,6 @@ int main(int argc, char** argv) {
     sphere.set_material(std::make_shared<Material>(material));
     scene->add_object(sphere);
     scene->delete_object(0);
-//    scene = create_default_scene("rock.glb");
     
     std::vector<PointLight> lights;
     {
