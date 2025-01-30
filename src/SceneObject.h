@@ -12,7 +12,7 @@
 namespace OM3D {
 
     // Fur
-    inline int shell_number = 64;
+    inline int shell_number = 32;
     inline float fur_density = 325.f;
     inline float hair_rigidity = 25.f;
     inline float base_thickness = 1.5f; // [0. - 1.5]
@@ -44,6 +44,11 @@ namespace OM3D {
 
     // Movement
     // inline glm::vec3 movement;
+
+    // Fins
+    inline bool show_shell = true;
+    inline bool show_fins = true;
+    inline float fins_threshold = 0.5; // [0. - 1.]
 
 class SceneObject {
 

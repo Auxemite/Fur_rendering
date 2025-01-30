@@ -1,9 +1,9 @@
 #version 450 core
 
+#include "utils.glsl"
+
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
-
-#define INSTANCING 1
 
 layout(location = 0) in vec3 in_normal[];
 layout(location = 1) in vec2 in_uv[];
@@ -14,7 +14,6 @@ layout(location = 5) in vec3 in_bitangent[];
 layout(location = 6) in vec3 in_view_direction[];
 #if INSTANCING == 1
     layout(location = 7) in float shell_rank[];
-    layout(location = 7) out float out_shell_rank;
 #else
     uniform float shell_rank;
 #endif
@@ -26,6 +25,10 @@ layout(location = 3) out vec3 out_position;
 layout(location = 4) out vec3 out_tangent;
 layout(location = 5) out vec3 out_bitangent;
 layout(location = 6) out vec3 out_view_direction;
+#if INSTANCING == 1
+    layout(location = 7) out float out_shell_rank;
+#endif
+layout(location = 8) out int out_is_surface;
 
 void main()
 {

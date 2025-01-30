@@ -232,6 +232,18 @@ void gui(ImGuiRenderer& imgui) {
             ImGui::EndMenu();
         }
 
+        if(ImGui::BeginMenu("Fins options")) {
+            ImGui::Checkbox("Show shell", &show_shell);
+            ImGui::Checkbox("Show fins", &show_fins);
+            ImGui::DragFloat("Fins threshold", &fins_threshold, .01f, 0.f, 1.f, "%.3f");
+            if(ImGui::Button("Reset")) {
+                show_shell = true;
+                show_fins = true;
+                fins_threshold = 0.5; // [0. - 1.]
+            }
+            ImGui::EndMenu();
+        }
+
         if(ImGui::MenuItem("GPU Profiler")) {
             open_gpu_profiler = true;
         }

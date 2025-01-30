@@ -2,18 +2,15 @@
 
 #include "utils.glsl"
 
-#define INSTANCING 1
-
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
 layout(location = 3) in vec4 in_tangent_bitangent_sign;
 layout(location = 4) in vec3 in_color;
 #if INSTANCING == 1
-layout(location = 5) in float shell_rank;
-layout(location = 7) out float out_shell_rank;
+    layout(location = 5) in float shell_rank;
 #else
-uniform float shell_rank;
+    uniform float shell_rank;
 #endif
 
 layout(location = 0) out vec3 out_normal;
@@ -23,6 +20,11 @@ layout(location = 3) out vec3 out_position;
 layout(location = 4) out vec3 out_tangent;
 layout(location = 5) out vec3 out_bitangent;
 layout(location = 6) out vec3 out_view_direction;
+#if INSTANCING == 1
+    layout(location = 7) out float out_shell_rank;
+#endif
+layout(location = 8) out int out_is_surface;
+
 
 layout(binding = 0) uniform Data {
     FrameData frame;
@@ -164,8 +166,9 @@ void main() {
 
     // Compute position
     const vec4 position = model * vec4(in_pos, 1.0) + vec4(falloff, 0.);
+
     vec3 fall_in_normal = normalize(falloff);
-    out_normal = normalize(mat3(model) * fall_in_normal);
+
     vec3 up = vec3(0.0, 1.0, 0.0);
     if (abs(dot(up, fall_in_normal)) > 0.99)
         up = vec3(1.0, 0.0, 0.0);
@@ -174,7 +177,7 @@ void main() {
 
     out_uv = in_uv;
     out_color = in_color;
-    out_position = position.xyz;
+    out_position = in_pos + falloff;
 
     out_view_direction = normalize(frame.camera.position - position.xyz);
     #if INSTANCING == 1

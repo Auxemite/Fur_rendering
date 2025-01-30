@@ -2,8 +2,6 @@
 
 #include "utils.glsl"
 
-#define INSTANCING 1
-
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_normal;
 
@@ -15,10 +13,12 @@ layout(location = 4) in vec3 in_tangent;
 layout(location = 5) in vec3 in_bitangent;
 layout(location = 6) in vec3 in_view_direction;
 #if INSTANCING == 1
-layout(location = 7) in float shell_rank;
+    layout(location = 7) in float shell_rank;
 #else
-uniform float shell_rank;
+    uniform float shell_rank;
 #endif
+layout(location = 8) flat in int in_is_surface;
+
 
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
@@ -172,6 +172,8 @@ void main()
             final_color = sRGBToLinear(vec4(final_color, 1.0)).rgb;
             final_color = Aces(final_color); // HDR tone mapping
             out_color = LinearTosRGB(vec4(final_color, 1.0));
+            // if (in_is_surface == 0)
+            //    out_color = vec4(1.);
         }
         else
             discard;
