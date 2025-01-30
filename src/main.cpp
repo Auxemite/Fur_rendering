@@ -173,8 +173,8 @@ void gui(ImGuiRenderer& imgui) {
         if(ImGui::BeginMenu("Fur options")) {
             ImGui::DragInt("Shell number", &shell_number, 1.f, 1, 200); 
             ImGui::DragFloat("Fur Density", &fur_density, 1.f, 1.0f, 800.0f, "%.1f");
-            ImGui::DragFloat("Hair Rigidity", &hair_rigidity, 1.f, 0.1f, 100.0f, "%.1f");
-            ImGui::DragFloat("Hair Length", &fur_length, .1f, 0.5f, 50.f, "%.2f", ImGuiSliderFlags_None);
+            ImGui::DragFloat("Hair Rigidity", &hair_rigidity, 1.f, 1.f, 100.0f, "%.1f");
+            ImGui::DragFloat("Hair Length", &fur_length, .1f, 0.1f, 30.f, "%.2f", ImGuiSliderFlags_None);
             ImGui::DragFloat("Base thickness", &base_thickness, .01f, 0.0f, 2.0f, "%.3f");
             ImGui::DragFloat("Tip thickness", &tip_thickness, .01f, 0.0f, 2.0f, "%.3f");
             ImGui::DragFloat("Min Length", &hair_min_length, .01f, 0.0f, 1.0f, "%.3f");
@@ -190,7 +190,7 @@ void gui(ImGuiRenderer& imgui) {
                 hair_rigidity = 25.f;
                 base_thickness = 1.5f; // [0. - 1.5]
                 tip_thickness = .05f; // [0. - 1.5]
-                fur_length = 1.f;
+                fur_length = .5f;
                 hair_min_length = 0.f; // [0. - 1.]
                 hair_max_length = 1.f; // [0. - 1.]
                 hair_fuzziness = 2.f; // [0. - 10.]

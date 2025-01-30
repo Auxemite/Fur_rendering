@@ -177,7 +177,7 @@ void main() {
 
     out_uv = in_uv;
     out_color = in_color;
-    out_position = in_pos + falloff;
+    out_position = position.xyz;
 
     out_view_direction = normalize(frame.camera.position - position.xyz);
     #if INSTANCING == 1

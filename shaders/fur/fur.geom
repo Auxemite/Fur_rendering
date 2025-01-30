@@ -64,8 +64,8 @@ vec3 col = vec3(.1f, .8f, 1.f);
 
 void emit_vertex(vec3 point, int i)
 {
-    gl_Position = frame.camera.view_proj * model * vec4(point, 1.0);
-    out_normal = mat3(model) * in_normal[i];
+    gl_Position = frame.camera.view_proj * vec4(point, 1.0);
+    out_normal = in_normal[i];
     out_uv = in_uv[i];
     out_color = vec3(1., 1., 1.);//in_color[i];
     out_position = (model * vec4(point, 1.)).xyz;
@@ -134,11 +134,11 @@ void main()
     // The first few ranks never shows some fins
     // Then decide to show fin or normal surface depending
     // on angle between the camera and the surface
-    float angle = abs(dot(view_direction, normal));
+    float angle = dot(view_direction, normal);
 
     if (show_shell == 1 && (shell_r < 0.2 || angle > fins_threshold))
         emit_surface();
     
-    if (show_fins == 1 && angle <= fins_threshold)
+    if (show_fins == 1 && angle > -0.1 && angle <= fins_threshold)
         emit_fins();
 }
