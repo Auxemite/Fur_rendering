@@ -145,8 +145,8 @@ void main()
             final_color = sRGBToLinear(vec4(final_color, 1.0)).rgb;
             final_color = Aces(final_color); // HDR tone mapping
             out_color = LinearTosRGB(vec4(final_color, 1.0));
-            if (in_is_surface == 0)
-                out_color = vec4(1.);
+            // if (in_is_surface == 0)
+            //    out_color = vec4(1.);
         }
         else
             discard;

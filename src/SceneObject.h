@@ -12,7 +12,7 @@
 namespace OM3D {
 
     // Fur
-    inline int shell_number = 64;
+    inline int shell_number = 32;
     inline float fur_density = 325.f;
     inline float hair_rigidity = 25.f;
     inline float base_thickness = 1.5f; // [0. - 1.5]

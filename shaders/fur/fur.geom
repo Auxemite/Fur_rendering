@@ -3,7 +3,7 @@
 #include "utils.glsl"
 
 layout(triangles) in;
-layout(triangle_strip, max_vertices = 11) out;
+layout(triangle_strip, max_vertices = 12) out;
 
 layout(location = 0) in vec3 in_normal[];
 layout(location = 1) in vec2 in_uv[];
@@ -65,10 +65,10 @@ vec3 col = vec3(.1f, .8f, 1.f);
 void emit_vertex(vec3 point, int i)
 {
     gl_Position = frame.camera.view_proj * model * vec4(point, 1.0);
-    out_normal = in_normal[i];
+    out_normal = mat3(model) * in_normal[i];
     out_uv = in_uv[i];
     out_color = vec3(1., 1., 1.);//in_color[i];
-    out_position = point;
+    out_position = (model * vec4(point, 1.)).xyz;
     out_tangent = in_tangent[i];
     out_bitangent = in_bitangent[i];
     out_view_direction = in_view_direction[i];

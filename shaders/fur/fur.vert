@@ -166,15 +166,17 @@ void main() {
 
     // Compute position
     const vec4 position = model * vec4(in_pos, 1.0) + vec4(falloff, 0.);
+
     vec3 fall_in_normal = normalize(falloff);
-    out_normal = normalize(mat3(model) * fall_in_normal);
+
     vec3 up = vec3(0.0, 1.0, 0.0);
+    // out_normal = normalize(mat3(model) * fall_in_normal);
     out_tangent = normalize(mat3(model) * cross(up, fall_in_normal));
     out_bitangent = normalize(cross(out_tangent, out_normal));
 
     out_uv = in_uv;
     out_color = in_color;
-    out_position = position.xyz;
+    out_position = in_pos + falloff;
 
     out_view_direction = normalize(frame.camera.position - position.xyz);
     #if INSTANCING == 1
