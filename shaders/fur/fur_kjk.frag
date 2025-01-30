@@ -19,7 +19,6 @@ layout(location = 6) in vec3 in_view_direction;
 #endif
 layout(location = 8) flat in int in_is_surface;
 
-
 layout(binding = 0) uniform sampler2D in_texture;
 layout(binding = 1) uniform sampler2D in_normal_texture;
 layout(binding = 0) uniform Data {
@@ -33,10 +32,13 @@ uniform float hair_min_length;
 uniform float hair_max_length;
 
 uniform float fur_lighting;
-uniform float roughness;
-uniform float metaless;
 uniform float ambient;
 uniform float ambient_occ;
+uniform float ks;
+uniform float kss;
+uniform float ps;
+uniform float pss;
+uniform float kd;
 
 float pi = 3.14159265359;
 
@@ -73,55 +75,38 @@ float fresnelSchlick(float dotVH, float f0)
     return f0 + (1.0 - f0) * pow(1.0 - dotVH, 5.0);
 }
 
-float StrandSpecular(vec3 T, vec3 V, vec3 L, float exponent)
+float sinSpec(vec3 T, vec3 L, float dotTL)
 {
-    vec3 H = normalize(L + V);
-    float dotTH = dot(T, H);
-    float sinTH = sqrt(1.0 - dotTH * dotTH);
-//    float dirAtten = smoothstep(-1.0, 0.0, dot(T, H));
-
-//    return dirAtten * pow(sinTH, exponent);
-    return pow(sinTH, exponent);
-}
-
-float SinSpec(vec3 T, vec3 L)
-{
-    float dotTL = dot(T, L);
-    return sqrt(1.0 - dotTL * dotTL);
+    return dot(normalize(L - T * dotTL), L);
 }
 
 // Kajiya-Kay shading model function
 vec3 kajiya_kay(vec3 T, vec3 B, vec3 N, vec3 L,
             vec3 V, vec3 albedo, vec3 light_color)
 {
-    // Compute the effective normal
-    vec3 strand_normal = normalize(L - T * dot(T, L));
-    vec3 H = normalize(L + V);
-
     // Diffuse term
-//    vec3 h = normalize(lightVec + viewVec);
-//    float ks = fresnelSchlick(rdot(h, viewVec), 0.04 + metaless);
-//    vec3 diffuse = (1.0 - ks) * (texture(in_texture, in_uv)).xyz * vec3(0.1, 0.0, 0.0) * rdot(normal, lightVec) / pi;
-    float diffuse = max(dot(strand_normal, L), 0.0);
-//    diffuse = 0.0;
+//    float ks = fresnelSchlick(rdot(H, V), 0.04 + metaless);
+//    vec3 diffuse = vec3(1.0) * (1.0 - ks) * dot(B, L);
+//    float diffuse = max(dot(strand_normal, L), 0.0);
+//    float diffuse = SinSpec(T, L);
+    float diffuse = min(kd * sinSpec(T, L, dot(T, L)), 1.0f);
 
     // Specular term
-    float variation = sin(in_normal.x) * sin(in_normal.y) * sin(in_normal.z) * pi;
-    variation = variation * 0.5 + 0.5;
-    float spec = dot(B, L) * dot(B, V) + SinSpec(B, L) * SinSpec(B, V);
-    B *= variation;
-    float spec2 = dot(B, L) * dot(B, V) + SinSpec(B, L) * SinSpec(B, V);
-    vec3 specular = metaless * vec3(pow(spec, 100.0 / (roughness + 0.001)));
-    specular += vec3(pow(spec2, 10.0 / (roughness + 0.001))) * albedo;
+    float dotBL = dot(B, L);
+    float dotBV = dot(B, V);
+    float spec = dotBL * dotBV + sinSpec(B, L, dotBL) * sinSpec(B, V, dotBV);
+    vec3 specular = ks * vec3(min(pow(spec, 100.0 / (ps + 0.001)), 1.0));
 
-//    vec3 specular = metaless * vec3(1.0) * StrandSpecular(T, V, L, 100.0 / (roughness + 0.001));
-
-//    float specular = metaless * pow(max(dot(strand_normal, half_vector), 0.0), 100.0 / (roughness + 0.001));
-//    specular += 0.1 * pow(max(dot(strand_normal, H), 0.0), 1.0 / (roughness + 0.001));
-//    specular = 0.0;
+    // Specular secondary term
+    vec3 BS = normalize(B + N * 0.2);
+    dotBL = dot(BS, L);
+    dotBV = dot(BS, V);
+    float spec2 = dotBL * dotBV + sinSpec(BS, L, dotBV) * sinSpec(BS, V, dotBV);
+    specular += kss * min(pow(spec2, 10.0 / (pss + 0.001)), 1.0) * albedo;
+    specular = min(specular, vec3(1.0));
 
     // Combine lighting
-    vec3 color = (diffuse * albedo + specular * light_color) * light_color;
+    vec3 color = diffuse * albedo * light_color + specular * light_color;
     return color;
 }
 
@@ -135,16 +120,12 @@ void main()
     float random2 = rand(seed2) * 0.5 + 0.5; // random value [0.5, 1]
     float thickness =  base_thickness + (shell_rank / random) * (tip_thickness - base_thickness);
     float fur_deepness = pow(0.5 + 0.5 * shell_rank / thickness, fur_lighting);
-
     vec3 albedo = vec3(0.5, 0.0, 0.0) * random2 * texture(in_texture, in_uv).rgb;
-//    albedo = vec3(0.5, 0.0, 0.0) * texture(in_texture, in_uv).rgb;
-
-//    #ifdef TEXTURED
-//        albedo = vec3(1.0) * random2 * texture(in_texture, in_uv).rgb;
-//    #endif
+    float variation = sin(in_normal.x) * sin(in_normal.y) * sin(in_normal.z) * pi;
+    variation = variation * 0.5 + 0.5;
 
     if (shell_rank == 0) {
-        vec3 final_color = fur_deepness * (albedo + vec3(ambient)) * ambient_occ;
+        vec3 final_color = fur_deepness * (albedo * variation + vec3(ambient)) * ambient_occ;
         final_color = sRGBToLinear(vec4(final_color, 1.0)).rgb;
         final_color = Aces(final_color); // HDR tone mapping
         out_color = LinearTosRGB(vec4(final_color, 1.0));
@@ -157,13 +138,9 @@ void main()
             vec3 light_direction = vec3(5.0, 5.0, 5.0); // Directional light source
             vec3 light_color = vec3(1.0); // Light color
 
-            mat3 TBN = mat3(in_tangent, in_bitangent, in_normal);
-            vec3 world_normal = normalize(TBN * vec3(1.0));
-
             // Kajiya-Kay lighting
-            vec3 irradiance = kajiya_kay(in_tangent, in_bitangent, world_normal, normalize(light_direction),
-                                    in_view_direction, albedo, light_color);
-//            irradiance = albedo * variation;
+            vec3 irradiance = kajiya_kay(in_tangent, in_bitangent, in_normal, normalize(light_direction),
+                                    in_view_direction, albedo * variation, light_color);
 
             // Apply ambient lighting
             vec3 final_color = fur_deepness * (irradiance + vec3(ambient)) * ambient_occ;
@@ -172,8 +149,6 @@ void main()
             final_color = sRGBToLinear(vec4(final_color, 1.0)).rgb;
             final_color = Aces(final_color); // HDR tone mapping
             out_color = LinearTosRGB(vec4(final_color, 1.0));
-            // if (in_is_surface == 0)
-            //    out_color = vec4(1.);
         }
         else
             discard;

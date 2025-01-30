@@ -204,8 +204,18 @@ void gui(ImGuiRenderer& imgui) {
         if(ImGui::BeginMenu("BRDF options")) {
             ImGui::Checkbox("Kajiya-Kay", &kajyia_Kay);
             ImGui::DragFloat("Fur Lighting", &fur_lighting, 0.1f, 0.0f, 5.0f, "%.1f");
-            ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
-            ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
+            if (kajyia_Kay) {
+                ImGui::DragFloat("KS", &ks, 0.01f, 0.0f, 1.0f, "%.1f");
+                ImGui::DragFloat("KSS", &kss, 0.01f, 0.0f, 1.0f, "%.2f");
+                ImGui::DragFloat("PS", &ps, 0.01f, 0.0f, 1.0f, "%.2f");
+                ImGui::DragFloat("PSS", &pss, 0.01f, 0.0f, 1.0f, "%.2f");
+                ImGui::DragFloat("KD", &kd, 0.1f, 0.0f, 5.0f, "%.1f");
+            }
+            else {
+                ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f, "%.2f");
+                ImGui::DragFloat("Metaless", &metaless, 0.01f, 0.0f, 1.0f, "%.2f");
+            }
+
             ImGui::DragFloat("Ambient", &ambient, 0.01f, 0.0f, 1.0f, "%.2f");
             ImGui::DragFloat("Ambient Occlusion", &ambient_occlusion, 0.01f, 0.0f, 1.0f, "%.2f");
             if(ImGui::Button("Reset")) {
