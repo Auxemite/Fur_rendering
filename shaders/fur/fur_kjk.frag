@@ -77,7 +77,7 @@ float fresnelSchlick(float dotVH, float f0)
 
 float sinSpec(vec3 T, vec3 L, float dotTL)
 {
-    return dot(normalize(L - T * dotTL), L);
+    return sqrt(1 - dotTL * dotTL); //dot(normalize(L - T * dotTL), L);
 }
 
 // Kajiya-Kay shading model function
@@ -120,12 +120,15 @@ void main()
     float random2 = rand(seed2) * 0.5 + 0.5; // random value [0.5, 1]
     float thickness =  base_thickness + (shell_rank / random) * (tip_thickness - base_thickness);
     float fur_deepness = pow(0.5 + 0.5 * shell_rank / thickness, fur_lighting);
+//    vec3 albedo = vec3(0.5, 0.0, 0.0) * random2 * texture(in_texture, in_uv).rgb;
     vec3 albedo = random2 * texture(in_texture, in_uv).rgb;
     float variation = sin(in_normal.x) * sin(in_normal.y) * sin(in_normal.z) * pi;
     variation = variation * 0.5 + 0.5;
+    vec3 light_direction = vec3(5.0, 5.0, 5.0); // Directional light source
+    vec3 light_color = vec3(1.0); // Light color
 
     if (shell_rank == 0) {
-        vec3 final_color = fur_deepness * (albedo * variation + vec3(ambient)) * ambient_occ;
+        vec3 final_color = fur_deepness * (variation + ambient) * albedo * ambient_occ;
         final_color = sRGBToLinear(vec4(final_color, 1.0)).rgb;
         final_color = Aces(final_color); // HDR tone mapping
         out_color = LinearTosRGB(vec4(final_color, 1.0));
@@ -134,16 +137,12 @@ void main()
     {
         if (length(uv_fract) <= thickness)
         {
-            // Sample textures
-            vec3 light_direction = vec3(5.0, 5.0, 5.0); // Directional light source
-            vec3 light_color = vec3(1.0); // Light color
-
             // Kajiya-Kay lighting
             vec3 irradiance = kajiya_kay(in_tangent, in_bitangent, in_normal, normalize(light_direction),
                                     in_view_direction, albedo * variation, light_color);
 
             // Apply ambient lighting
-            vec3 final_color = fur_deepness * (irradiance + vec3(ambient)) * ambient_occ;
+            vec3 final_color = fur_deepness * (irradiance + ambient * albedo) * ambient_occ;
 
             // Apply tone mapping and gamma correction
             final_color = sRGBToLinear(vec4(final_color, 1.0)).rgb;
