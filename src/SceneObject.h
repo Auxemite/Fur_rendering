@@ -35,6 +35,12 @@ namespace OM3D {
     inline float metaless = 0.7f;
     inline float ambient = 0.0f;
     inline float ambient_occlusion = 1.0f;
+    // Kajiya-Kay
+    inline float ks = 1.0f;
+    inline float kss = 0.1f;
+    inline float ps = 0.2f;
+    inline float pss = 0.2f;
+    inline float kd = 0.5f;
   
     // Wind
     inline float wind_strength = 0.f;

@@ -57,12 +57,21 @@ void SceneObject::render(const RenderMode& renderMode, bool active_fur, float ti
         _material->set_fur_uniform(HASH("hair_curliness"), hair_curliness);
         _material->set_fur_uniform(HASH("hair_curl_size"), hair_curl_size);
       
-       // light properties
-       _material->set_fur_uniform(HASH("fur_lighting"), fur_lighting);
-       _material->set_fur_uniform(HASH("roughness"), roughness);
-       _material->set_fur_uniform(HASH("metaless"), metaless);
-       _material->set_fur_uniform(HASH("ambient"), ambient);
-       _material->set_fur_uniform(HASH("ambient_occ"), ambient_occlusion);
+        // light properties
+        _material->set_fur_uniform(HASH("fur_lighting"), fur_lighting);
+        _material->set_fur_uniform(HASH("ambient"), ambient);
+        _material->set_fur_uniform(HASH("ambient_occ"), ambient_occlusion);
+        if (kajyia_Kay) {
+            _material->set_fur_uniform(HASH("ks"), ks);
+            _material->set_fur_uniform(HASH("kss"), kss);
+            _material->set_fur_uniform(HASH("ps"), ps);
+            _material->set_fur_uniform(HASH("pss"), pss);
+            _material->set_fur_uniform(HASH("kd"), kd);
+        }
+        else {
+            _material->set_fur_uniform(HASH("roughness"), roughness);
+            _material->set_fur_uniform(HASH("metaless"), metaless);
+        }
 
         // Wind Uniforms
         #define PI 3.14159f

@@ -93,7 +93,7 @@ float fresnelSchlick(float dotVH, float f0)
     return f0 + (1.0 - f0) * pow(1.0 - dotVH, 5.0);
 }
 
-vec3 brdf(vec3 normal, float roughness, float metaless, vec2 in_uv, float random)
+vec3 brdf(vec3 normal, float roughness, float metaless, vec3 albedo)
 {
     vec3 irradiance = vec3(0.0);
     vec3 lightposition = vec3(5.0, 5.0, 0.0);
@@ -113,7 +113,7 @@ vec3 brdf(vec3 normal, float roughness, float metaless, vec2 in_uv, float random
         float spec = G * D * ks / (4.0 * dot(normal, in_view_direction) * dot(normal, lightDir) + 1.0);
 
         //! diffuse
-        vec3 diffuse = (1.0 - ks) * (texture(in_texture, in_uv)).xyz * random * vec3(1.0, 0.0, 0.0) * rdot(normal, lightDir) / pi;
+        vec3 diffuse = (1.0 - ks) * albedo * rdot(normal, lightDir) / pi;
         diffuse *= (1.0 - metaless);
 
         vec3 lightSample = lightcolor * lightintensity;
@@ -132,23 +132,25 @@ void main()
     float random2 = rand(seed2) * 0.5 + 0.5; // random value [0, 1]
     float thickness =  base_thickness + (shell_rank / random) * (tip_thickness - base_thickness);
     float fur_deepness = pow(0.5 + 0.5 * shell_rank / thickness, fur_lighting);
+    vec3 albedo = (texture(in_texture, in_uv)).xyz * random2 * vec3(1.0, 0.0, 0.0);
 
     if (shell_rank == 0)
     {
-        vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv, 1.0) * fur_deepness;
-        vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient * fur_deepness), 1.0)).rgb;
-        albedo = Aces(albedo); // HDR
-        out_color = LinearTosRGB(vec4(albedo, 1.0));
+        vec3 albedo_normal = (texture(in_texture, in_uv)).xyz * vec3(1.0, 0.0, 0.0);
+        vec3 irradiance = brdf(in_normal, roughness, metaless, albedo_normal) * fur_deepness * ambient_occ;
+        vec3 final_color = sRGBToLinear(vec4(irradiance + albedo_normal * ambient * fur_deepness, 1.0)).rgb;
+        final_color = Aces(final_color); // HDR
+        out_color = LinearTosRGB(vec4(final_color, 1.0));
     }
     else if (random > shell_rank && random >= hair_min_length && random <= hair_max_length)
     {
         if (length(uv_fract) <= thickness)
         {
-            vec3 irradiance = brdf(in_normal, roughness, metaless, in_uv, random2) * fur_deepness * ambient_occ;
+            vec3 irradiance = brdf(in_normal, roughness, metaless, albedo) * fur_deepness * ambient_occ;
 
-            vec3 albedo = sRGBToLinear(vec4(irradiance + vec3(ambient * fur_deepness), 1.0)).rgb;
-            albedo = Aces(albedo); // HDR
-            out_color = LinearTosRGB(vec4(albedo, 1.0));
+            vec3 final_color = sRGBToLinear(vec4(irradiance + albedo * ambient * fur_deepness, 1.0)).rgb;
+            final_color = Aces(final_color); // HDR
+            out_color = LinearTosRGB(vec4(final_color, 1.0));
             // if (in_is_surface == int(false))
             //    out_color = vec4(1., 1., 1., 1.);
         }

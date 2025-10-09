@@ -14,6 +14,10 @@ cmake ../..
 make -j
 ```
 
+tar project : `tar -cvf om3D_Fur.tar external/ shaders/ src/ CMakeLists.txt README.md data/cube.glb data/sphere2.glb`
+
+zip project : `zip -r om3d_fur.zip *`
+
 ### Contact
 If you have a problem, please send a mail to
 - alexandre.lamure@epita.fr
