@@ -5,14 +5,55 @@
 <br />
 <div align="center">
   <a href="https://github.com/Auxemite/om3D/">
-    <img src="data/screenshot.png" alt="3D Realistic Fur"> <!-- width="80" height="80"> -->
+    <img src="data/fur.png" alt="3D Realistic Fur"> <!-- width="80" height="80"> -->
   </a>
 </div>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-The goal of this project was to simulate realistic fur with shell rendering, using modern 3D optimisations and modern rendering techniques.
+The objective of this project is to implement an optimized method for simulating realistic fur in 3D and in real time. To do this, we use shell rendering, an efficient, optimized, and widely used method that nevertheless has some known flaws. We have attempted to correct these flaws.
+
+Simulating realistic fur in 3D is an optimization problem. Perfectly simulating the state of fur in real time is too computationally expensive. For this reason, several methods have been created to imitate realistic fur rendering, including shell rendering.
+
+Shell rendering is a fur simulation method that involves creating shells around the relevant meshes on which to draw the state of the fur hairs. To simplify, we could say that shell rendering is similar to the idea of drawing a vertical hair on a sheet of paper with lots of small horizontal lines. The difference here is that the hair is drawn in 3D and the method aims to optimize computing time. Slides are available on the project for visual explanations.
+
+### 3D engine optimization techniques
+
+For this project, we implemented various solutions to optimize the 3D engine as a whole. Some are partially implemented. 
+
+* Backface culling
+* Frustum culling
+* Z-Prepass
+* G-Buffer
+* Deferred shading
+
+### Fur Geometry
+#### Fur instancing
+* Density
+* Length
+* Thickness
+
+#### Fur constraints
+* Fuzziness
+* Curlyness
+* Gravity
+* Wind
+* Turbulence
+* Rigidity
+
+### Fur Lighting
+#### Basic lighting
+* Ambient
+* Fur depth
+* Labertian diffuse BRDF
+* Cook-Torrance GGX specular BRDF
+
+#### Fur-oriented lighting
+* Kajiya-Kay (based on Blinn-Phong model)
+
+### Shell rendering corrections
+Fins
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
