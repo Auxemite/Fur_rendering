@@ -20,18 +20,18 @@ Shell rendering is a fur simulation method that involves creating shells around 
 
 ### 3D engine optimization techniques
 
-For this project, we implemented various solutions to optimize the 3D engine as a whole. Some are partially implemented. 
+For this project, we implemented various solutions to optimize the 3D engine as a whole.
 
 * Backface culling
 * Frustum culling
 * Z-Prepass
 * G-Buffer
-* Deferred shading
+* Deferred shading (partially implemented)
 
 ### Fur Geometry
 We have added real-time customization of shell rendering settings :
 * Shell number
-* Density
+* Density (number of fur hair)
 * Length
 * Thickness
 
@@ -47,7 +47,7 @@ In addition to the parameters related to shell rendering, we attempted to apply 
 
 For the lighting, we first tried using standard lighting management parameters:
 * Ambient
-* Fur depth
+* Fur deepness (the closer the part of a hair is to the base, the darker it is)
 * Labertian diffuse BRDF
 * Cook-Torrance GGX specular BRDF
 
@@ -57,7 +57,7 @@ We therefore used the Kajiya-Kay method (based on the Blinn-Phong model), which 
 
 ### Shell rendering corrections
 
-The major problem with shell rendering is visible when the hairs are on the edges of the mesh: the different shells can be seen. To correct this problem, we implemented the edge method.
+The major problem with shell rendering is visible when the hairs are on the edges of the mesh: the different shells can be seen. To correct this problem, we implemented a method called "fins".
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
