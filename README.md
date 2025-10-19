@@ -1,10 +1,10 @@
-# OM3D
+# Fur Rendering
 <a id="readme-top"></a>
 # 3D Realistic Fur
 
 <br />
 <div align="center">
-  <a href="https://github.com/Auxemite/om3D/">
+  <a href="https://github.com/Auxemite/Fur_rendering/">
     <img src="data/fur.png" alt="3D Realistic Fur"> <!-- width="80" height="80"> -->
   </a>
 </div>
@@ -81,7 +81,7 @@ This project has been developped on Windows10 and Linux and should work on both.
 
 1. Clone the repo
 ```sh
-git clone https://github.com/Auxemite/om3D
+git clone https://github.com/Auxemite/Fur_rendering
 ```
 
 2. Build
