@@ -29,12 +29,13 @@ For this project, we implemented various solutions to optimize the 3D engine as 
 * Deferred shading
 
 ### Fur Geometry
-#### Fur instancing
+We have added real-time customization of shell rendering settings :
+* Shell number
 * Density
 * Length
 * Thickness
 
-#### Fur constraints
+In addition to the parameters related to shell rendering, we attempted to apply internal and external constraints on the fur :
 * Fuzziness
 * Curlyness
 * Gravity
@@ -42,18 +43,21 @@ For this project, we implemented various solutions to optimize the 3D engine as 
 * Turbulence
 * Rigidity
 
-### Fur Lighting
-#### Basic lighting
+### Fur Lightling
+
+For the lighting, we first tried using standard lighting management parameters:
 * Ambient
 * Fur depth
 * Labertian diffuse BRDF
 * Cook-Torrance GGX specular BRDF
 
-#### Fur-oriented lighting
-* Kajiya-Kay (based on Blinn-Phong model)
+The result was unsatisfactory and stemmed from the very principle of shell rendering. Fur hairs are not physically hairs (rather, they are a disc pattern drawn on the mesh shells) and, as a result, the light calculations related to the surface normal in particular are incorrect.
+
+We therefore used the Kajiya-Kay method (based on the Blinn-Phong model), which allows us to simulate the physical information of the hairs in real time in order to recover the surface normal and thus calculate the light on each surface.
 
 ### Shell rendering corrections
-Fins
+
+The major problem with shell rendering is visible when the hairs are on the edges of the mesh: the different shells can be seen. To correct this problem, we implemented the edge method.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -93,9 +97,23 @@ make -j
 ./om3D
 ```
 
-## Important Info
+## Sources
 
-For a more efficient way of using DEAR IMGUI, we have created a directory in src/frontend called "imgui". This is the code of DEAR IMGUI and is NOT our code. We use this library only for some help on the creation of the app.
+Shell Rendering : https://www.youtube.com/watch?v=9dr-tRQzij4 
+		   https://hhoppe.com/fur.pdf 
+
+Kajiya Kay:  https://jacob-lopez.github.io/SairHimulator/report.html 
+	  https://dl.acm.org/doi/pdf/10.1145/74334.74361 
+  https://www.programmersought.com/article/69504579106/ 
+
+Geometry :   https://youtu.be/aEpklsGKVmQ?t=1028 
+https://web.media.mit.edu/~bandy/fur/CGI10fur.pdf
+
+Instancing :   https://learnopengl.com/Advanced-OpenGL/Instancing
+	          https://youtu.be/yy2Zq-WkNqI?si=BzX4JzA8_E2nVJDt
+
+Fins:   https://github.com/hecomi/UnityFurURP?tab=readme-ov-file
+            https://hhoppe.com/fur.pdf 
 
 <!-- AUTHORS -->
 ## Authors
