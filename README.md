@@ -1,6 +1,5 @@
-# Fur Rendering
 <a id="readme-top"></a>
-# 3D Realistic Fur
+# 3D Realistic Fur (Shell Rendering)
 
 <br />
 <div align="center">
@@ -99,6 +98,8 @@ make -j
 
 ## Sources
 
+Basic engine code (without optimisation nor fur rendering) was given by Alexandre Lamure and Gregoire Angerand.
+
 Shell Rendering : https://www.youtube.com/watch?v=9dr-tRQzij4 
 		   https://hhoppe.com/fur.pdf 
 
@@ -117,8 +118,6 @@ Fins:   https://github.com/hecomi/UnityFurURP?tab=readme-ov-file
 
 <!-- AUTHORS -->
 ## Authors
-Alexandre Lamure
-Gregoire Angerand
 Ernest Bardon
 Kael Facon
 
