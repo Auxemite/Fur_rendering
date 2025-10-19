@@ -1,6 +1,6 @@
 # OM3D
 <a id="readme-top"></a>
-# 3D Modeling Software
+# 3D Realistic Fur
 
 <br />
 <div align="center">
